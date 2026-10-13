@@ -1,0 +1,771 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "mode": {
+      "default": "dry-run",
+      "type": "string",
+      "enum": [
+        "dry-run",
+        "queue",
+        "off"
+      ]
+    },
+    "stateDir": {
+      "default": null,
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "homeDirectory": {
+      "default": null,
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "interests": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "languages": {
+          "default": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Java"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "topics": {
+          "default": [
+            "react",
+            "nextjs",
+            "fastapi",
+            "spring-boot",
+            "mongodb",
+            "llm",
+            "ai-tools"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "keywords": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "github": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "tokenEnv": {
+          "default": "GITHUB_TOKEN",
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "writeTokenEnv": {
+          "default": "OSS_SCOUT_WRITE_TOKEN",
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "apiBaseUrl": {
+          "default": "https://api.github.com",
+          "type": "string",
+          "format": "uri"
+        },
+        "apiVersion": {
+          "default": "2022-11-28",
+          "type": "string"
+        },
+        "concurrency": {
+          "default": 1,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "minWriteIntervalMs": {
+          "default": 1500,
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "repos": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "allow": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]+\\/(\\*|[A-Za-z0-9_.-]+)$"
+          }
+        },
+        "deny": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]+\\/(\\*|[A-Za-z0-9_.-]+)$"
+          }
+        }
+      }
+    },
+    "discovery": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "fromDependencies": {
+          "default": true,
+          "type": "boolean"
+        },
+        "fromSearch": {
+          "default": true,
+          "type": "boolean"
+        },
+        "intervalHours": {
+          "default": 24,
+          "type": "number",
+          "minimum": 1
+        },
+        "maxOwnRepos": {
+          "default": 30,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxNewReposPerRun": {
+          "default": 40,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "searchPushedWithinDays": {
+          "default": 60,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "searchResultsPerQuery": {
+          "default": 20,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "includeDevDependencies": {
+          "default": false,
+          "type": "boolean"
+        }
+      }
+    },
+    "screening": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "minStars": {
+          "default": 100,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxStars": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minScore": {
+          "default": 0.55,
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "maxDaysSinceMaintainerActivity": {
+          "default": 45,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "minOutsideMergeRate": {
+          "default": 0.25,
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "minMergeRateSample": {
+          "default": 8,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "maxMedianFirstResponseDays": {
+          "default": 14,
+          "type": "number",
+          "minimum": 0
+        },
+        "requireCi": {
+          "default": true,
+          "type": "boolean"
+        },
+        "requireLicense": {
+          "default": true,
+          "type": "boolean"
+        },
+        "allowedLicenses": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skipUnclearRestrictivePolicy": {
+          "default": true,
+          "type": "boolean"
+        },
+        "rescreenAfterDays": {
+          "default": 14,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "maxPerTick": {
+          "default": 3,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "issues": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "labels": {
+          "default": [
+            "good first issue",
+            "help wanted",
+            "bug",
+            "confirmed",
+            "documentation",
+            "docs",
+            "tests",
+            "testing"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excludeLabels": {
+          "default": [
+            "wontfix",
+            "won't fix",
+            "invalid",
+            "duplicate",
+            "question",
+            "discussion",
+            "needs design",
+            "needs-design",
+            "rfc",
+            "proposal",
+            "breaking",
+            "blocked",
+            "on hold",
+            "needs decision",
+            "needs triage",
+            "security"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "staleAfterDays": {
+          "default": 180,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "maxComments": {
+          "default": 15,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "minScore": {
+          "default": 0.5,
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "maxCandidatesPerRepo": {
+          "default": 15,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "caps": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "maxOpenPrsPerRepo": {
+          "default": 1,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "repoCooldownDays": {
+          "default": 30,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxSubmittedPrsPerWeek": {
+          "default": 3,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxPendingQueueItems": {
+          "default": 3,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "maxConcurrentTasks": {
+          "default": 1,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        }
+      }
+    },
+    "implementation": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "maxAttempts": {
+          "default": 3,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "maxDiffLines": {
+          "default": 200,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "maxFilesChanged": {
+          "default": 8,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "agent": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sessionTimeoutMinutes": {
+          "default": 30,
+          "type": "number",
+          "minimum": 1
+        },
+        "cloneDepth": {
+          "default": 50,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "requireReproduction": {
+          "default": true,
+          "type": "boolean"
+        },
+        "authorName": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authorEmail": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "overrides": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "install": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "test": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lint": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "image": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "sandbox": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "runtime": {
+          "default": "docker",
+          "type": "string",
+          "enum": [
+            "docker",
+            "podman"
+          ]
+        },
+        "images": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "node": {
+              "default": "node:22-bookworm",
+              "type": "string"
+            },
+            "python": {
+              "default": "python:3.12-bookworm",
+              "type": "string"
+            },
+            "maven": {
+              "default": "maven:3.9-eclipse-temurin-21",
+              "type": "string"
+            },
+            "gradle": {
+              "default": "gradle:8.10-jdk21",
+              "type": "string"
+            },
+            "fallback": {
+              "default": "debian:bookworm",
+              "type": "string"
+            }
+          }
+        },
+        "installNetwork": {
+          "default": "bridge",
+          "type": "string",
+          "enum": [
+            "bridge",
+            "none"
+          ]
+        },
+        "memory": {
+          "default": "4g",
+          "type": "string"
+        },
+        "cpus": {
+          "default": "2",
+          "type": "string"
+        },
+        "pidsLimit": {
+          "default": 1024,
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 9007199254740991
+        },
+        "readOnlyRootfs": {
+          "default": true,
+          "type": "boolean"
+        },
+        "timeouts": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "installMinutes": {
+              "default": 20,
+              "type": "number",
+              "minimum": 1
+            },
+            "testMinutes": {
+              "default": 20,
+              "type": "number",
+              "minimum": 1
+            },
+            "lintMinutes": {
+              "default": 10,
+              "type": "number",
+              "minimum": 1
+            }
+          }
+        },
+        "maxOutputBytes": {
+          "default": 200000,
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "critic": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "model": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minConfidence": {
+          "default": 0.7,
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "followup": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "pollIntervalMinutes": {
+          "default": 60,
+          "type": "number",
+          "minimum": 5
+        },
+        "draftReplies": {
+          "default": true,
+          "type": "boolean"
+        },
+        "draftFixes": {
+          "default": true,
+          "type": "boolean"
+        },
+        "model": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "scheduler": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "autostart": {
+          "default": true,
+          "type": "boolean"
+        },
+        "tickSeconds": {
+          "default": 60,
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 9007199254740991
+        },
+        "backoffBaseSeconds": {
+          "default": 60,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "backoffMaxSeconds": {
+          "default": 21600,
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 9007199254740991
+        },
+        "leaseSeconds": {
+          "default": 300,
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "budget": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "perTask": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "maxTokens": {
+              "default": 600000,
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 9007199254740991
+            },
+            "maxCostUsd": {
+              "default": 5,
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "perDay": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "maxTokens": {
+              "default": 3000000,
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 9007199254740991
+            },
+            "maxCostUsd": {
+              "default": 20,
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "disclosure": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "line": {
+          "default": "Prepared with AI assistance; reviewed and tested by me.",
+          "type": "string",
+          "minLength": 10
+        },
+        "replyLine": {
+          "default": "(Drafted with AI assistance and reviewed by me.)",
+          "type": "string",
+          "minLength": 5
+        }
+      }
+    },
+    "logging": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "level": {
+          "default": "info",
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ]
+        },
+        "console": {
+          "default": false,
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

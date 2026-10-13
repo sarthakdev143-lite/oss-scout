@@ -1,0 +1,33 @@
+{
+  "name": "oss-scout",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {
+      "dockerDashComposeVersion": "none"
+    }
+  },
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+  "containerEnv": {
+    "OSS_SCOUT_CONFIG": "${containerWorkspaceFolder}/oss-scout.config.codespaces.json"
+  },
+  "secrets": {
+    "OSS_SCOUT_GITHUB_TOKEN": {
+      "description": "Read token for discovery, screening and status: a fine-grained PAT with read-only access to public repositories.",
+      "documentationUrl": "https://github.com/settings/personal-access-tokens/new"
+    },
+    "OSS_SCOUT_WRITE_TOKEN": {
+      "description": "Optional, for queue mode: a classic PAT with only the public_repo scope, used only after you approve an item.",
+      "documentationUrl": "https://github.com/settings/tokens/new?scopes=public_repo&description=oss-scout%20write"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "customizations": {
+    "codespaces": {
+      "openFiles": ["docs/CODESPACES.md"]
+    }
+  }
+}

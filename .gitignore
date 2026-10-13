@@ -1,0 +1,5 @@
+node_modules/
+.oss-scout/
+*.log
+coverage/
+.claude-logs/

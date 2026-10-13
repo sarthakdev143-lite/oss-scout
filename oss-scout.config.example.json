@@ -1,0 +1,43 @@
+{
+  "$schema": "./schema/oss-scout.config.schema.json",
+  "mode": "dry-run",
+  "stateDir": "~/.oss-scout",
+  "interests": {
+    "languages": ["TypeScript", "JavaScript", "Python", "Java"],
+    "topics": ["react", "nextjs", "fastapi", "spring-boot", "mongodb", "llm", "ai-tools"],
+    "keywords": []
+  },
+  "repos": {
+    "allow": [],
+    "deny": []
+  },
+  "screening": {
+    "minStars": 100,
+    "minScore": 0.55
+  },
+  "caps": {
+    "maxOpenPrsPerRepo": 1,
+    "repoCooldownDays": 30,
+    "maxSubmittedPrsPerWeek": 3,
+    "maxPendingQueueItems": 3
+  },
+  "implementation": {
+    "model": null,
+    "maxAttempts": 3,
+    "maxDiffLines": 200
+  },
+  "critic": {
+    "model": null,
+    "minConfidence": 0.7
+  },
+  "sandbox": {
+    "runtime": "docker"
+  },
+  "budget": {
+    "perTask": { "maxTokens": 600000, "maxCostUsd": 5 },
+    "perDay": { "maxTokens": 3000000, "maxCostUsd": 20 }
+  },
+  "disclosure": {
+    "line": "Prepared with AI assistance; reviewed and tested by me."
+  }
+}

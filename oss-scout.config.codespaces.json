@@ -1,0 +1,39 @@
+{
+  "$schema": "./schema/oss-scout.config.schema.json",
+  "mode": "dry-run",
+  "stateDir": "/workspaces/.oss-scout",
+  "github": {
+    "tokenEnv": "OSS_SCOUT_GITHUB_TOKEN",
+    "writeTokenEnv": "OSS_SCOUT_WRITE_TOKEN"
+  },
+  "interests": {
+    "languages": ["TypeScript", "JavaScript", "Python"],
+    "topics": ["react", "nextjs", "fastapi", "mongodb", "llm", "ai-tools"],
+    "keywords": []
+  },
+  "screening": {
+    "minStars": 100,
+    "maxStars": 25000
+  },
+  "caps": {
+    "maxOpenPrsPerRepo": 1,
+    "repoCooldownDays": 30,
+    "maxSubmittedPrsPerWeek": 3,
+    "maxPendingQueueItems": 3,
+    "maxConcurrentTasks": 1
+  },
+  "implementation": {
+    "model": "opencode/big-pickle"
+  },
+  "critic": {
+    "model": "opencode/nemotron-3-ultra-free"
+  },
+  "followup": {
+    "model": "opencode/big-pickle"
+  },
+  "sandbox": {
+    "runtime": "docker",
+    "memory": "4g",
+    "cpus": "2"
+  }
+}
