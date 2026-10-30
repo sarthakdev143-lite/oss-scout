@@ -2,6 +2,11 @@
 # Autonomous daily contributor loop for ~/oss-scout on box sarthak.
 # Fixed start 01:00 UTC (06:30 IST). Up to 2 auto-submitted PRs/day, then sleep.
 set -u
+if [ -f "$HOME/.oss-scout/env" ]; then
+  set -a
+  . "$HOME/.oss-scout/env"
+  set +a
+fi
 cd "$HOME/oss-scout"
 export PATH="$HOME/.local/bin:$HOME/.bun/bin:$PATH"
 mkdir -p docs/daily
