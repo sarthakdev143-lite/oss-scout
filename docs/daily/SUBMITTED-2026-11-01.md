@@ -1,0 +1,1 @@
+- OWASP/SecurityShepherd https://github.com/OWASP/SecurityShepherd/pull/1098 d2caa3c code+tests https://github.com/OWASP/SecurityShepherd/issues/1071
