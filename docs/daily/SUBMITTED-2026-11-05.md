@@ -1,0 +1,1 @@
+- RocketChat/Rocket.Chat.js.SDK https://github.com/RocketChat/Rocket.Chat.js.SDK/pull/438 a054e89 code+tests https://github.com/RocketChat/Rocket.Chat.js.SDK/issues/295
