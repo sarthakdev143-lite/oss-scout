@@ -1,0 +1,1 @@
+- OWASP/cve-lite-cli https://github.com/OWASP/cve-lite-cli/pull/1534 7063b14 code+tests https://github.com/OWASP/cve-lite-cli/issues/1416
