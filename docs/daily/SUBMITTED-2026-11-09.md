@@ -1,0 +1,1 @@
+- django/djangoproject.com https://github.com/django/djangoproject.com/pull/2962 89df477 code+tests https://github.com/django/djangoproject.com/issues/1430
