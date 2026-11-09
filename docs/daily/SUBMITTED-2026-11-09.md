@@ -1,1 +1,2 @@
 - django/djangoproject.com https://github.com/django/djangoproject.com/pull/2962 89df477 code+tests https://github.com/django/djangoproject.com/issues/1430
+- wagtail/wagtail-ai https://github.com/wagtail/wagtail-ai/pull/169 05f53f1 code+tests https://github.com/wagtail/wagtail-ai/issues/54
