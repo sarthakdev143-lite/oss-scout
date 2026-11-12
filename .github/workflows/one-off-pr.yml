@@ -1,0 +1,131 @@
+name: one-off-pr
+
+# Manual-only: one focused contribution to a single repo, through the same gates as the daily loop.
+# Use it to prove the harness on a repo you own, where a self-filed issue is acceptable.
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "owner/repo to contribute to"
+        type: string
+        default: "sarthakdev143-lite/doomscroller"
+      base_branch:
+        description: "PR base branch"
+        type: string
+        default: "master"
+      guidance:
+        description: "Optional extra guidance for the agent"
+        type: string
+        default: "Prefer a correctness bug with a clear failure mode. Docs-only changes are not acceptable."
+
+concurrency:
+  group: one-off-pr
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  contribute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout oss-scout (tooling)
+        uses: actions/checkout@v4
+
+      - name: Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - name: opencode
+        run: |
+          set -euo pipefail
+          npm install --global @opencode/cli@2.2.1
+          opencode --version
+
+      - name: Credentials
+        env:
+          READ_TOKEN: ${{ secrets.OSS_SCOUT_READ_TOKEN }}
+          WRITE_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+          OPENCODE_AUTH_B64: ${{ secrets.OPENCODE_AUTH_B64 }}
+        run: |
+          set -euo pipefail
+          for v in READ_TOKEN WRITE_TOKEN OPENCODE_AUTH_B64; do
+            if [ -z "${!v:-}" ]; then echo "::error::secret for $v is missing"; exit 1; fi
+          done
+          umask 077
+          { printf 'GITHUB_TOKEN=%s\n' "$READ_TOKEN"; printf 'OSS_SCOUT_WRITE_TOKEN=%s\n' "$WRITE_TOKEN"; printf 'GH_TOKEN=%s\n' "$WRITE_TOKEN"; } > "$HOME/.oss-scout-env"
+          printf '%s' "$OPENCODE_AUTH_B64" | base64 -d | opencode auth import
+          git config --global user.name "sarthakdev143-lite"
+          git config --global user.email "sarthakdev143.official@gmail.com"
+
+      - name: Verify the model answers
+        run: |
+          set -euo pipefail
+          opencode run --model opencode-go/muse-spark-1.3-contributor "Reply with exactly: ok" | tail -2
+
+      - name: One contribution
+        env:
+          TARGET_REPO: ${{ inputs.repo }}
+          BASE_BRANCH: ${{ inputs.base_branch }}
+          GUIDANCE: ${{ inputs.guidance }}
+        run: |
+          set -uo pipefail
+          set -a; . "$HOME/.oss-scout-env"; set +a
+          gh auth setup-git    # git push uses GH_TOKEN, no token in any URL
+
+          PROMPT=$(mktemp)
+          cat > "$PROMPT" <<BRIEF
+          You are making ONE contribution to the repo $TARGET_REPO (base branch $BASE_BRANCH).
+          Extra guidance: $GUIDANCE
+
+          HARD RULES
+          - Work only in that repository. Never touch any other repo. Never push to the base branch.
+          - Do not fabricate work: if you cannot find a genuine, provable defect, stop and say so.
+          - Docs-only, formatting-only and comment-only changes are NOT acceptable.
+          - Every claim needs evidence you produced: a command you ran and its output.
+
+          PROCESS
+          1. Clone: gh repo clone $TARGET_REPO /tmp/target && cd /tmp/target && git checkout $BASE_BRANCH
+          2. Recon: read README, the test layout, and the main modules. Run the existing test suite first
+             (python: python3 -m venv .venv && .venv/bin/pip install -q -r requirements.txt; then
+             .venv/bin/python -m pytest -q) and record the exact pass/fail baseline. Pre-existing
+             environment failures are acceptable if they are identical before and after your change.
+          3. Pick ONE defect that is genuinely wrong: incorrect behaviour, data loss, crash path, race,
+             wrong default, or an invariant that silently breaks. Prefer correctness over cosmetics.
+          4. Prove it: write a test that FAILS on the unmodified code, run it, and keep that output.
+          5. Fix it minimally. No refactors, no renames, no unrelated edits. Keep the diff small.
+          6. Re-run: your new test must pass and the suite must match the baseline (same passes, no new failures).
+          7. Security pass: no secrets, no new network calls, no shell/exec injection, no weakened validation.
+          8. Commit on a new branch "trial/oss-scout-$(date -u +%Y%m%d)-<short-slug>" with a message that
+             explains the defect and the fix. Push the branch.
+          9. Open ONE pull request to $BASE_BRANCH with:
+             - a title naming the fixed behaviour,
+             - a body with: the defect, the failing-test evidence, the fix, and the test output,
+             - the line: Prepared with AI assistance; reviewed and tested by me.
+             Use: gh pr create --repo $TARGET_REPO --base $BASE_BRANCH --title ... --body ...
+          10. Print a final summary: what was wrong, the failing test output, the final test output,
+              the diff stat, and the PR URL. If you stopped without a PR, state exactly why.
+
+          Never invent numbers. If a step fails, say so with the real output. Be concise.
+          BRIEF
+
+          timeout --signal=TERM 100m opencode run --model opencode-go/muse-spark-1.3-contributor -f "$PROMPT" \
+            "Make the contribution described in the brief. Today is $(date -u +%F)." 2>&1 | tee /tmp/cycle.log
+
+          {
+            echo "## one-off contribution: $TARGET_REPO"
+            echo '```'
+            tail -c 12000 /tmp/cycle.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: one-off-log-${{ github.run_id }}
+          path: /tmp/cycle.log
+          if-no-files-found: ignore
+          retention-days: 14
