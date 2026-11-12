@@ -125,7 +125,7 @@ jobs:
       - name: Contributor window
         env:
           RUN_ONCE: "1"
-          FORCE_WINDOW: ${{ github.event_name == 'workflow_dispatch' && inputs.force_window && '1' || '0' }}
+          FORCE_WINDOW: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
           RUN_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.run_minutes || '120' }}
           MAX_SUBMITS_PER_DAY: ${{ github.event_name == 'workflow_dispatch' && inputs.max_submits || '2' }}
           OSS_SCOUT_STATE_DIR: ${{ github.workspace }}/../.oss-scout
