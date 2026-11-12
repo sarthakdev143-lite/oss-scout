@@ -1,0 +1,77 @@
+name: verify-pr
+
+# Independent check of a claimed bug fix: does the new test fail without the fix and pass with it?
+# Manual only. Runs as a third party: same repo, clean environment, no agent involved.
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "owner/repo"
+        type: string
+        required: true
+      branch:
+        description: "PR head branch"
+        type: string
+        required: true
+      base:
+        description: "Base branch"
+        type: string
+        default: "master"
+      test_path:
+        description: "Test file that proves the defect"
+        type: string
+        required: true
+      fixed_file:
+        description: "The file the fix touches (reverted to base for the negative check)"
+        type: string
+        required: true
+      python:
+        description: "Python version"
+        type: string
+        default: "3.12"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Clone PR branch
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+          REPO: ${{ inputs.repo }}
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --branch "$BRANCH" "https://github.com/$REPO.git" work
+          cd work
+          echo "head: $(git rev-parse --short HEAD)"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python }}
+
+      - name: Install
+        working-directory: work
+        run: |
+          set -euo pipefail
+          python -m venv .venv
+          .venv/bin/pip install -q --upgrade pip
+          .venv/bin/pip install -q pytest
+          if [ -f requirements.txt ]; then .venv/bin/pip install -q -r requirements.txt; fi
+
+      - name: Positive check (fix applied)
+        working-directory: work
+        run: |
+          set -uo pipefail
+          .venv/bin/python -m pytest -q "${{ inputs.test_path }}" 2>&1 | tail -15
+          echo "POSITIVE_EXIT=${PIPESTATUS[0]}"
+
+      - name: Negative check (fix reverted)
+        working-directory: work
+        run: |
+          set -uo pipefail
+          git fetch --quiet origin "${{ inputs.base }}"
+          git checkout "origin/${{ inputs.base }}" -- "${{ inputs.fixed_file }}"
+          echo "reverted: ${{ inputs.fixed_file }}"
+          .venv/bin/python -m pytest -q "${{ inputs.test_path }}" 2>&1 | tail -25
+          echo "NEGATIVE_EXIT=${PIPESTATUS[0]}"
