@@ -53,11 +53,22 @@ jobs:
       - name: Install
         working-directory: work
         run: |
-          set -euo pipefail
+          set -uo pipefail
           python -m venv .venv
           .venv/bin/pip install -q --upgrade pip
-          .venv/bin/pip install -q pytest
-          if [ -f requirements.txt ]; then .venv/bin/pip install -q -r requirements.txt; fi
+          .venv/bin/pip install -q pytest sqlalchemy pydantic python-dotenv
+          if [ -f requirements.txt ]; then
+            # Non-fatal: a broken pin in the project must not stop the check of the test itself.
+            .venv/bin/pip install -q -r requirements.txt || echo "::warning::requirements.txt did not install; continuing with minimal deps"
+          fi
+          .venv/bin/python - <<'PY'
+          mods = ["sqlalchemy", "pytest"]
+          for m in mods:
+              try:
+                  __import__(m); print(f"ok {m}")
+              except Exception as e:
+                  print(f"MISSING {m}: {e}")
+          PY
 
       - name: Positive check (fix applied)
         working-directory: work
