@@ -70,15 +70,29 @@ jobs:
         working-directory: work
         run: |
           set -uo pipefail
+          set +e
           .venv/bin/python -m pytest -q "${{ inputs.test_path }}" 2>&1 | tail -15
-          echo "POSITIVE_EXIT=${PIPESTATUS[0]}"
+          echo "POSITIVE_EXIT=${PIPESTATUS[0]}" | tee /tmp/positive.txt
+          exit 0
 
       - name: Negative check (fix reverted)
         working-directory: work
         run: |
           set -uo pipefail
+          set +e
           git fetch --quiet origin "${{ inputs.base }}"
           git checkout "origin/${{ inputs.base }}" -- "${{ inputs.fixed_file }}"
           echo "reverted: ${{ inputs.fixed_file }}"
           .venv/bin/python -m pytest -q "${{ inputs.test_path }}" 2>&1 | tail -25
-          echo "NEGATIVE_EXIT=${PIPESTATUS[0]}"
+          echo "NEGATIVE_EXIT=${PIPESTATUS[0]}" | tee /tmp/negative.txt
+          exit 0
+
+      - name: Verdict
+        run: |
+          set -uo pipefail
+          POS=$(grep -o '[0-9]*' /tmp/positive.txt | head -1)
+          NEG=$(grep -o '[0-9]*' /tmp/negative.txt | head -1)
+          echo "positive exit=$POS (must be 0), negative exit=$NEG (must be non-zero)"
+          if [ "$POS" -ne 0 ]; then echo "::error::the test does not pass with the fix applied"; exit 1; fi
+          if [ "$NEG" -eq 0 ]; then echo "::error::the test also passes without the fix: it does not prove the defect"; exit 1; fi
+          echo "VERDICT: the fix is load-bearing and the test proves the defect"
