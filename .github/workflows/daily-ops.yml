@@ -1,0 +1,147 @@
+name: daily-ops
+
+# One contributor window per day on a free public-repo runner: no quota to track and nothing to
+# start by hand. run-ops.sh runs in RUN_ONCE mode and exits when the window or the daily PR quota ends.
+on:
+  schedule:
+    - cron: "0 1 * * *"   # 01:00 UTC = 06:30 IST, same window the VPS used
+  workflow_dispatch:
+    inputs:
+      force_window:
+        description: "Treat now as the window start (manual test)"
+        type: boolean
+        default: true
+      run_minutes:
+        description: "Window length in minutes"
+        type: string
+        default: "120"
+      max_submits:
+        description: "Max PRs this run"
+        type: string
+        default: "2"
+
+concurrency:
+  group: oss-scout-daily
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Git identity for daily commits
+        run: |
+          git config user.name "sarthakdev143-lite"
+          git config user.email "sarthakdev143.official@gmail.com"
+
+      - name: Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - name: opencode
+        run: |
+          set -euo pipefail
+          npm install --global @opencode/cli@2.2.1
+          opencode --version
+          opencode auth import --help > /dev/null   # fail fast if this CLI cannot import credentials
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Restore pipeline state
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.oss-scout/oss-scout.db
+            ~/.oss-scout/oss-scout.db-wal
+            ~/.oss-scout/oss-scout.db-shm
+            ~/.oss-scout/logs
+            ~/.oss-scout/queue
+          key: oss-scout-state-${{ github.run_id }}
+          restore-keys: |
+            oss-scout-state-
+
+      - name: Credentials
+        env:
+          READ_TOKEN: ${{ secrets.OSS_SCOUT_READ_TOKEN }}
+          WRITE_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+          OPENCODE_AUTH_B64: ${{ secrets.OPENCODE_AUTH_B64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "${READ_TOKEN:-}" ]; then echo "::error::secret OSS_SCOUT_READ_TOKEN is missing"; exit 1; fi
+          if [ -z "${WRITE_TOKEN:-}" ]; then echo "::error::secret OSS_SCOUT_WRITE_TOKEN is missing"; exit 1; fi
+          if [ -z "${OPENCODE_AUTH_B64:-}" ]; then echo "::error::secret OPENCODE_AUTH_B64 is missing"; exit 1; fi
+
+          mkdir -p "$HOME/.oss-scout"
+          umask 077
+          {
+            printf 'GITHUB_TOKEN=%s\n' "$READ_TOKEN"
+            printf 'OSS_SCOUT_WRITE_TOKEN=%s\n' "$WRITE_TOKEN"
+            printf 'GH_TOKEN=%s\n' "$WRITE_TOKEN"
+          } > "$HOME/.oss-scout/env"
+          chmod 600 "$HOME/.oss-scout/env"
+
+          printf '%s' "$OPENCODE_AUTH_B64" | base64 -d | opencode auth import
+          opencode auth list
+
+      - name: Autopilot config
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, pathlib
+          src = pathlib.Path("oss-scout.config.autopilot.json")
+          cfg = json.loads(src.read_text())
+          cfg["stateDir"] = str(pathlib.Path(os.environ["HOME"]) / ".oss-scout")
+          cfg["github"] = {
+              "tokenEnv": "GITHUB_TOKEN",
+              "writeTokenEnv": "OSS_SCOUT_WRITE_TOKEN",
+          }
+          out = pathlib.Path(cfg["stateDir"]) / "oss-scout.config.json"
+          out.parent.mkdir(parents=True, exist_ok=True)
+          out.write_text(json.dumps(cfg, indent=2))
+          print(f"config written to {out}")
+          PY
+
+      - name: Verify the model answers
+        run: |
+          set -euo pipefail
+          opencode run --model opencode-go/muse-spark-1.3-contributor "Reply with exactly: ok" | tail -3
+
+      - name: Doctor
+        run: |
+          set -uo pipefail
+          export OSS_SCOUT_CONFIG="$HOME/.oss-scout/oss-scout.config.json"
+          bun src/cli.ts doctor || echo "doctor reported an issue (continuing; the audit will catch real failures)"
+
+      - name: Contributor window
+        env:
+          RUN_ONCE: "1"
+          FORCE_WINDOW: ${{ github.event_name == 'workflow_dispatch' && inputs.force_window && '1' || '0' }}
+          RUN_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.run_minutes || '120' }}
+          MAX_SUBMITS_PER_DAY: ${{ github.event_name == 'workflow_dispatch' && inputs.max_submits || '2' }}
+          OSS_SCOUT_STATE_DIR: ${{ github.workspace }}/../.oss-scout
+        run: |
+          set -uo pipefail
+          export OSS_SCOUT_STATE_DIR="$HOME/.oss-scout"
+          bash run-ops.sh
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-logs-${{ github.run_id }}
+          path: |
+            docs/daily-24-7.log
+            docs/daily/
+            ~/.oss-scout/logs/
+          if-no-files-found: ignore
+          retention-days: 14

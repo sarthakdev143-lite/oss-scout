@@ -36,11 +36,18 @@ constraint you must plan around: **compute is metered**.
    Never name a secret `GITHUB_*`: GitHub blocks those, and inside a codespace `GITHUB_TOKEN`
    is the codespace's own repo-scoped token, which cannot read or write upstream repos.
 
-3. **Log opencode in once** (cannot be automated — it is an interactive auth flow). In the
-   codespace terminal:
+3. **Log opencode in non-interactively.** The OpenCode Go credential can be moved with
+   `opencode auth export` / `import`, so no browser step is needed inside the codespace. On a
+   machine already logged in:
 
    ```bash
-   opencode auth login     # sign in to OpenCode Go, then check:
+   opencode auth export "OpenCode Console" | base64 -w0      # prints only to your terminal
+   ```
+
+   Put that value in a third Codespaces secret, `OPENCODE_AUTH_B64`. `post-start.sh` imports it on
+   every start. Verify inside the codespace:
+
+   ```bash
    opencode run --model opencode-go/muse-spark-1.3-contributor "reply ok"
    ```
 
@@ -84,6 +91,6 @@ gh codespace stop -c <name>
 
 * **A stopped codespace runs nothing.** If you do not start it, that day produces no PRs.
   This is the main behavioural change from the VPS.
-* **Interactive auth expiry.** If `opencode` logs out, cycles fail fast and the log says so;
-  re-run `opencode auth login`.
+* **Interactive auth expiry.** If the OpenCode Go credential expires, cycles fail fast and the log
+  says so; re-export it and update the `OPENCODE_AUTH_B64` secret.
 * **Storage counts while stopped.** A codespace stopped for 30 days is deleted with its state.

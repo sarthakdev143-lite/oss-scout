@@ -3,15 +3,26 @@
 # Fixed start 01:00 UTC (06:30 IST). Up to 2 auto-submitted PRs/day, then sleep.
 set -u
 
-# ---- workspace + state (codespace or plain box) ----
-if [ -d /workspaces/oss-scout ]; then
+# ---- workspace + state (GitHub Actions, Codespace, or plain box) ----
+if [ -n "${OSS_SCOUT_ROOT:-}" ]; then
+  ROOT="$OSS_SCOUT_ROOT"
+  IN_CODESPACE=0
+elif [ -d /workspaces/oss-scout ]; then
   ROOT=/workspaces/oss-scout
-  STATE_DIR=/workspaces/.oss-scout
   IN_CODESPACE=1
+elif [ -n "${GITHUB_WORKSPACE:-}" ]; then
+  ROOT="$GITHUB_WORKSPACE"      # GitHub Actions checkout
+  IN_CODESPACE=0
 else
   ROOT="$HOME/oss-scout"
-  STATE_DIR="$HOME/.oss-scout"
   IN_CODESPACE=0
+fi
+if [ -n "${OSS_SCOUT_STATE_DIR:-}" ]; then
+  STATE_DIR="$OSS_SCOUT_STATE_DIR"
+elif [ -d /workspaces/oss-scout ]; then
+  STATE_DIR=/workspaces/.oss-scout
+else
+  STATE_DIR="$HOME/.oss-scout"
 fi
 cd "$ROOT" || exit 1
 export PATH="$HOME/.bun/bin:$HOME/.local/bin:$PATH"
@@ -33,14 +44,17 @@ elif [ "$IN_CODESPACE" = "1" ] && [ -n "${OSS_SCOUT_GITHUB_TOKEN:-}" ]; then
   fi
 fi
 
-START_HOUR_UTC=1
-START_MIN_UTC=0
-MAX_SUBMITS_PER_DAY=2
-WINDOW_MINUTES=120   # 2h/day fits the Codespaces free quota (60h/month on 2-core)
+# Overridable so one script serves a box, a codespace, and a single-run CI job.
+START_HOUR_UTC=${START_HOUR_UTC:-1}
+START_MIN_UTC=${START_MIN_UTC:-0}
+MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-2}
+RUN_MINUTES=${RUN_MINUTES:-120}   # 2h/day fits the Codespaces free quota; CI runs one window then exits
+RUN_ONCE=${RUN_ONCE:-0}           # 1 = exit when the window ends or the quota is met (GitHub Actions)
+FORCE_WINDOW=${FORCE_WINDOW:-0}   # 1 = treat "now" as the window start (manual test run)
 LOG="docs/daily-24-7.log"
 mkdir -p docs/daily "$STATE_DIR"
 
-echo "[$(date -u +%FT%TZ)] ops boot root=$ROOT state=$STATE_DIR window ${START_HOUR_UTC}:00 UTC +${WINDOW_MINUTES}min max ${MAX_SUBMITS_PER_DAY}/day: $(git rev-parse --short HEAD 2>/dev/null)" >> "$LOG"
+echo "[$(date -u +%FT%TZ)] ops boot root=$ROOT state=$STATE_DIR window ${START_HOUR_UTC}:00 UTC +${RUN_MINUTES}min max ${MAX_SUBMITS_PER_DAY}/day run_once=$RUN_ONCE: $(git rev-parse --short HEAD 2>/dev/null)" >> "$LOG"
 
 sleep_until_next_day() {
   NEXT_DAY=$(date -u -d "tomorrow" +%F)
@@ -52,10 +66,23 @@ sleep_until_next_day() {
   sleep "$SLEEP_SEC"
 }
 
+# One window per process for CI; forever-loop for a long-lived host.
+window_done() {
+  if [ "$RUN_ONCE" = "1" ]; then
+    echo "[$(date -u +%FT%TZ)] window complete, RUN_ONCE set: exiting 0" >> "$LOG"
+    exit 0
+  fi
+  sleep_until_next_day
+}
+
 while true; do
   NOW_EPOCH=$(date -u +%s)
   TODAY=$(date -u +%F)
-  DAY_START=$(date -u -d "$TODAY ${START_HOUR_UTC}:${START_MIN_UTC}:00" +%s)
+  if [ "$FORCE_WINDOW" = "1" ]; then
+    DAY_START=$NOW_EPOCH
+  else
+    DAY_START=$(date -u -d "$TODAY ${START_HOUR_UTC}:${START_MIN_UTC}:00" +%s)
+  fi
   if [ "$NOW_EPOCH" -lt "$DAY_START" ]; then
     SLEEP_SEC=$((DAY_START - NOW_EPOCH))
     if [ "$SLEEP_SEC" -lt 60 ]; then SLEEP_SEC=60; fi
@@ -64,9 +91,9 @@ while true; do
     sleep "$SLEEP_SEC"
     continue
   fi
-  WINDOW_END=$((DAY_START + WINDOW_MINUTES * 60))
+  WINDOW_END=$((DAY_START + RUN_MINUTES * 60))
   if [ "$NOW_EPOCH" -ge "$WINDOW_END" ]; then
-    sleep_until_next_day
+    window_done
     continue
   fi
 
@@ -74,13 +101,17 @@ while true; do
   touch "$SUBMIT_FILE"
   SUBMITS=$(grep -c . "$SUBMIT_FILE" 2>/dev/null || true)
   if [ "${SUBMITS:-0}" -ge "$MAX_SUBMITS_PER_DAY" ]; then
-    sleep_until_next_day
+    window_done
     continue
   fi
 
   BRANCH="dev/vps-$TODAY"
   if ! git rev-parse --verify "$BRANCH" >/dev/null 2>&1; then
-    git checkout -b "$BRANCH" >> "$LOG" 2>&1
+    if git rev-parse --verify "origin/$BRANCH" >/dev/null 2>&1; then
+      git checkout -b "$BRANCH" "origin/$BRANCH" >> "$LOG" 2>&1   # continue the day's branch
+    else
+      git checkout -b "$BRANCH" >> "$LOG" 2>&1
+    fi
   else
     git checkout "$BRANCH" >> "$LOG" 2>&1
   fi

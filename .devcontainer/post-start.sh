@@ -36,9 +36,16 @@ if [ -f "$ROOT/oss-scout.config.autopilot.json" ]; then
   export OSS_SCOUT_CONFIG="$STATE_DIR/oss-scout.config.json"
 fi
 
-# 3. Model auth is interactive and cannot be automated. Warn loudly instead of failing silently.
-if [ ! -f "$HOME/.local/share/opencode/auth.json" ] && [ ! -f "$HOME/.config/opencode/auth.json" ]; then
-  log "WARNING opencode is not logged in: run 'opencode auth login' once in this terminal (model opencode-go/muse-spark-1.3-contributor)"
+# 3. Model auth. opencode stores provider credentials itself; `opencode auth export` / `import`
+#    move them without any interactive login. Put the export in a secret named OPENCODE_AUTH_B64
+#    (base64 so line breaks survive):  opencode auth export | base64 -w0
+if [ ! -f "$HOME/.config/opencode/auth.json" ] && [ ! -f "$HOME/.local/share/opencode/auth.json" ]; then
+  if [ -n "${OPENCODE_AUTH_B64:-}" ]; then
+    printf '%s' "$OPENCODE_AUTH_B64" | base64 -d | opencode auth import >> "$LOG" 2>&1 \
+      && log "opencode auth imported" || log "WARNING opencode auth import failed"
+  else
+    log "WARNING opencode not authenticated: set the OPENCODE_AUTH_B64 secret (see docs/CODESPACES-AUTOPILOT.md)"
+  fi
 fi
 
 # 4. Docker (sandbox for untrusted repo code).
