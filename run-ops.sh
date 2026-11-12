@@ -75,11 +75,19 @@ window_done() {
   sleep_until_next_day
 }
 
+# FORCE_WINDOW fixes the window start ONCE: recomputing it inside the loop would push the end
+# forward on every iteration and the window would never close.
+FORCED_START=""
+if [ "$FORCE_WINDOW" = "1" ]; then
+  FORCED_START=$(date -u +%s)
+  echo "[$(date -u +%FT%TZ)] FORCE_WINDOW: treating now as window start, ${RUN_MINUTES}min window" >> "$LOG"
+fi
+
 while true; do
   NOW_EPOCH=$(date -u +%s)
   TODAY=$(date -u +%F)
   if [ "$FORCE_WINDOW" = "1" ]; then
-    DAY_START=$NOW_EPOCH
+    DAY_START=$FORCED_START
   else
     DAY_START=$(date -u -d "$TODAY ${START_HOUR_UTC}:${START_MIN_UTC}:00" +%s)
   fi
@@ -149,7 +157,9 @@ while true; do
   fi
 
   MSG="Today is $TODAY. Run one autonomous contributor cycle under the autonomy rules."
-  opencode run --model opencode-go/muse-spark-1.3-contributor -f "$PROMPT_FILE" "$MSG" >> "$LOG" 2>&1
+  # Bound one cycle: a hung agent must not hold the job until the 6h runner limit.
+  timeout --signal=TERM "${CYCLE_TIMEOUT_MIN:-45}m" \
+    opencode run --model opencode-go/muse-spark-1.3-contributor -f "$PROMPT_FILE" "$MSG" >> "$LOG" 2>&1
   rm -f "$PROMPT_FILE"
   echo "[$(date -u +%FT%TZ)] ops cycle exit=$? daily-push" >> "$LOG"
 
