@@ -56,19 +56,15 @@ jobs:
           set -uo pipefail
           python -m venv .venv
           .venv/bin/pip install -q --upgrade pip
-          .venv/bin/pip install -q pytest sqlalchemy pydantic python-dotenv
+          .venv/bin/pip install -q pytest pydantic pydantic-settings sqlalchemy python-dotenv
           if [ -f requirements.txt ]; then
-            # Non-fatal: a broken pin in the project must not stop the check of the test itself.
-            .venv/bin/pip install -q -r requirements.txt || echo "::warning::requirements.txt did not install; continuing with minimal deps"
+            # The project pins opencv-python-headless==4.14.0, which does not exist on PyPI.
+            # Drop only that line so the rest of the real dependency set installs.
+            grep -v -E '^\s*opencv-python-headless==' requirements.txt > /tmp/req.txt || cp requirements.txt /tmp/req.txt
+            .venv/bin/pip install -q -r /tmp/req.txt || echo "::warning::some requirements failed; continuing"
+            .venv/bin/pip install -q "opencv-python-headless>=4.10" || echo "::warning::opencv unavailable (import-only tests may still run)"
           fi
-          .venv/bin/python - <<'PY'
-          mods = ["sqlalchemy", "pytest"]
-          for m in mods:
-              try:
-                  __import__(m); print(f"ok {m}")
-              except Exception as e:
-                  print(f"MISSING {m}: {e}")
-          PY
+          .venv/bin/python -c "import sqlalchemy, pytest, pydantic_settings; print('deps ok')"
 
       - name: Positive check (fix applied)
         working-directory: work
