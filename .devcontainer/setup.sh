@@ -9,6 +9,11 @@ STATE_DIR="/workspaces/.oss-scout"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# tmux runs the 24/7 loop detached from the terminal tab.
+if ! command -v tmux >/dev/null 2>&1; then
+  (sudo apt-get update -qq && sudo apt-get install -y -qq tmux) || npm install --global tmux 2>/dev/null || true
+fi
+
 if [ "$(bun --version 2>/dev/null || true)" != "$BUN_VERSION" ]; then
   npm install --global "bun@$BUN_VERSION"
 fi

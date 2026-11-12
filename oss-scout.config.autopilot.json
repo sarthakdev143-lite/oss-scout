@@ -1,0 +1,65 @@
+{
+  "$schema": "./schema/oss-scout.config.schema.json",
+  "mode": "queue",
+  "stateDir": "/workspaces/.oss-scout",
+  "github": {
+    "tokenEnv": "OSS_SCOUT_GITHUB_TOKEN",
+    "writeTokenEnv": "OSS_SCOUT_WRITE_TOKEN"
+  },
+  "interests": {
+    "languages": ["TypeScript", "JavaScript", "Python", "Java"],
+    "topics": ["react", "nextjs", "fastapi", "spring-boot", "mongodb", "llm", "security", "developer-tools"],
+    "keywords": []
+  },
+  "repos": {
+    "allow": [
+      "OWASP/*",
+      "zulip/*",
+      "oppia/*",
+      "jenkinsci/*",
+      "RocketChat/*",
+      "processing/*",
+      "wagtail/*",
+      "openmrs/*",
+      "django/*",
+      "CircuitVerse/*",
+      "publiclab/*",
+      "sugarlabs/*",
+      "LibreHealth/*"
+    ],
+    "deny": []
+  },
+  "screening": {
+    "minStars": 100,
+    "minScore": 0.55,
+    "maxPerTick": 6
+  },
+  "caps": {
+    "maxOpenPrsPerRepo": 1,
+    "repoCooldownDays": 30,
+    "maxSubmittedPrsPerWeek": 14,
+    "maxPendingQueueItems": 10,
+    "maxConcurrentTasks": 2
+  },
+  "implementation": {
+    "model": null,
+    "maxAttempts": 3,
+    "maxDiffLines": 200
+  },
+  "critic": {
+    "model": null,
+    "minConfidence": 0.85
+  },
+  "sandbox": {
+    "runtime": "docker",
+    "memory": "4g",
+    "cpus": "2"
+  },
+  "budget": {
+    "perTask": { "maxTokens": 600000, "maxCostUsd": 5 },
+    "perDay": { "maxTokens": 10000000, "maxCostUsd": 70 }
+  },
+  "disclosure": {
+    "line": "Prepared with AI assistance; reviewed and tested by me."
+  }
+}

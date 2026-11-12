@@ -1,0 +1,39 @@
+name: autopilot-scripts
+
+# Guards the 24/7 loop scripts: a syntax error there silently kills a whole day's window.
+on:
+  push:
+    paths:
+      - "run-ops.sh"
+      - ".devcontainer/**"
+  pull_request:
+    paths:
+      - "run-ops.sh"
+      - ".devcontainer/**"
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: bash -n every script
+        run: |
+          set -euo pipefail
+          for f in run-ops.sh .devcontainer/setup.sh .devcontainer/post-start.sh; do
+            echo "checking $f"
+            bash -n "$f"
+          done
+      - name: shellcheck
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+          shellcheck -S warning -e SC1090,SC1091 run-ops.sh .devcontainer/setup.sh .devcontainer/post-start.sh
+      - name: devcontainer and config are valid JSON
+        run: |
+          set -euo pipefail
+          python3 -m json.tool .devcontainer/devcontainer.json > /dev/null
+          python3 -m json.tool oss-scout.config.autopilot.json > /dev/null
+          echo "json ok"

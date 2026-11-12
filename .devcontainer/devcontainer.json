@@ -25,6 +25,7 @@
     }
   },
   "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
   "customizations": {
     "codespaces": {
       "openFiles": ["docs/CODESPACES.md"]
