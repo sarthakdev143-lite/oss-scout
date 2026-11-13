@@ -45,7 +45,8 @@ This is the primary selection signal: volume follows merge rate, not effort.
 
 Active set = repos with a real merge rate and actual labeled supply, excluding known
 AI/CLA/assignment gates: OWASP/OWASP-Hunting, OWASP/wstg, OWASP/owasp-mastg,
-OpenRefine, joplin, astropy, freeCodeCamp, sugarlabs/musicblocks-v4, wagtail/wagtail.org.
+OpenRefine, joplin, freeCodeCamp, sugarlabs/musicblocks-v4, wagtail/wagtail.org.
+astropy was removed on 2026-11-13: its AI policy closes autonomous-agent PRs.
 
 Dropped on evidence, not on taste: oppia (9%), CircuitVerse (3%, AI prohibited), django (19%),
 scikit-learn (20%), pandas (24%), zulip (21%), RocketChat (17%), openmrs-core (14%),
@@ -71,23 +72,26 @@ wording is read and accepted.
 | django | CLA + triage process | contributor agreement required | blocked until CLA |
 | openmrs | process-heavy; some repos are tooling | querystore#80 is `.claude/` tooling (out of scope) | selective |
 | LibreHealth | no usable repo pool | GitHub search returned HTTP 422 | skip |
-| OpenRefine | none found | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy | **ADDED** |
+| OpenRefine | none found; agents allowed | probe 2026-11-13: gfi 5, help-wanted 19, no CLA; `AGENTS.md` tells agents to run `./refine lint` and add tests. Candidate #6289 is blocked by open PR #8020 (issue-level, not an org gate). | **USABLE** |
 | scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
 | pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| joplin | none found | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| astropy | none found | probe: bug 100, no CLA | not added yet (start with four) |
+| astropy | **AI policy prohibits agent PRs** | `astropy/astropy-project/policies/ai-policy.md`: "Autonomous workflows (agents) are not human contributors... or we will close the PR." | **BLOCKED for autonomous work** |
+| joplin | **individual CLA required** | `readme/dev/index.md`: "All contributors to the project must sign our Individual Contributor License Agreement." No signature on record for this account. `CLAUDE.md` is agent guidance, not an AI prohibition. | **BLOCKED until the owner signs the CLA** |
 | sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
 | scipy | none found | probe: gfi 3 only | low yield |
 | numpy / matplotlib / networkx | none found | probe: 0 on all three labels | low yield |
-| freeCodeCamp | none found | probe: help-wanted 8 | low yield |
+| freeCodeCamp | AI in code allowed; no CLA found | contributing FAQ: AI is "OK in code" but "not OK in comments/responses". Probe 2026-11-13: 8 target-labeled unassigned; #71399 explicitly not open for contribution; most others are curricula/design. | **thin — verify per issue** |
+| wagtail.org | no CLA/AI gate found | probe 2026-11-13: 11 target-labeled unassigned; #652 blocked by open PR #658; #602 last maintainer activity 2026-03-12 (>180d stale); no CONTRIBUTING file | **thin; stale/contested** |
 
 ## Practical consequences
 
 - The realistic steady state with these gates is roughly **1 verified PR/day**, not 2. The cap stays
   at 2 as a ceiling; do not manufacture work to fill it.
-- Highest-yield path today: **OWASP** (proven), then **jenkinsci plugins** (no CLA, real labeled
-  issues), then **zulip** issues that actually carry `help wanted`.
+- Highest-yield path today: **OWASP** (proven), then **OpenRefine** (agents allowed, tests
+  required), then **freeCodeCamp** (AI in code allowed, but thin supply). Astropy is out
+  (AI policy closes agent PRs), joplin is out (individual CLA), and jenkinsci/zulip are
+  outside `repos.allow`.
 - A cycle that reports "no eligible survivor" must name the gate per candidate, as cycle 4 of
   2026-11-13 did. That standard is the difference between a real hold and a filter eating the pool.
 - If throughput must rise, the lever is **more orgs without CLA/assignment gates**, not a looser
