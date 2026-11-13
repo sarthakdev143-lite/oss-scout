@@ -27,12 +27,12 @@ jobs:
           GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
         run: |
           set -uo pipefail
+          rc=0
           bash ops/verify-claim.sh \
             "sarthakdev143-lite/doomscroller" \
             "https://github.com/sarthakdev143-lite/doomscroller/pull/17" \
             "requirements.txt" "master" \
-            "python -m pip install -r requirements.txt && python -c 'import cv2'"
-          rc=$?
+            "python -m pip install -r requirements.txt && python -c 'import cv2'" || rc=$?
           if [ "$rc" -ne 0 ]; then echo "::error::gate rejected a known-good fix (exit $rc)"; exit 1; fi
           echo "SELFTEST known_good OK"
 
@@ -51,10 +51,10 @@ jobs:
         run: |
           set -uo pipefail
           # `true` succeeds with and without the fix, so the negative check must fail the gate.
+          rc=0
           bash ops/verify-claim.sh \
             "sarthakdev143-lite/doomscroller" \
             "https://github.com/sarthakdev143-lite/doomscroller/pull/17" \
-            "requirements.txt" "master" "true"
-          rc=$?
+            "requirements.txt" "master" "true" || rc=$?
           if [ "$rc" -ne 1 ]; then echo "::error::gate did not reject an unprovable claim (exit $rc, wanted 1)"; exit 1; fi
           echo "SELFTEST known_bad OK"
