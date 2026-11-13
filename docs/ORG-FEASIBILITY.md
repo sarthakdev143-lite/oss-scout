@@ -96,6 +96,32 @@ wording is read and accepted.
   2026-11-13 did. That standard is the difference between a real hold and a filter eating the pool.
 - If throughput must rise, the lever is **more orgs without CLA/assignment gates**, not a looser
   quality bar.
+
+## Cycle evidence (2026-11-13, cycle 7)
+
+Fresh gh searches on the repos added by the discovery pass (open + unassigned + target labels):
+
+| repo | supply (unassigned) | gate / note | verdict |
+|---|---|---|---|
+| suitenumerique/docs | GFI 7, help wanted 1, bug 24 | No CLA found. AI policy permits AI-assisted work with plain disclosure; DCO sign-off required. Frontend needs Node >=22.12 (CI uses 22). | **WORKS** — PR #3008 (issue #2989) |
+| CrossGL/crosstl | GFI 11, help wanted 6, bug 97 | No CLA or AI policy found. CONTRIBUTING: comment on the issue before starting; many candidates already have an open PR or an unacknowledged claimant. | usable, check PR/claim first |
+| Apicurio/apicurio-registry | GFI 2, help wanted 6 | `AGENTS.md`: DCO sign-off, one PR at a time, agree larger changes with maintainers first. | usable, narrow |
+| apache/amoro | GFI 3, help wanted 1, type:bug 12 | Apache project; CONTRIBUTING: claim with a `take` comment. ICLA/CLA not checked. | hold |
+| layer5io/layer5 | GFI 10, help wanted 5 (100 queried) | JS site; no gate probed. | usable, site-only |
+| lingdojo/kana-dojo | GFI 44, help wanted 43, bug 51 | Large pool; crowded. | low priority |
+
+Notes:
+
+- `suitenumerique/docs#2989` was maintainer-filed, unassigned, zero comments and had no linked PR.
+  The fix is one filter in `getUsers`; the frontend suite is `vitest` and runs from
+  `src/frontend/apps/impress`.
+- The independent verifier runs Node 20, while this repo's dependency graph needs Node >=22.12.
+  A reproducible verify command must install under `npx -y -p node@22` (see the 2026-11-13 ledger).
+- CrossGL's issue tracker is high-volume but heavily contested: of the top candidates inspected,
+  #3636 and #4005/#3931/#3920/#4473 had open PRs, and #3809/#3550/#3194/#3119 had unacknowledged
+  claimants. Check the timeline for a cross-referenced open PR before writing code.
+- Next highest-yield path after OWASP: **suitenumerique/docs** (real maintainer-filed bugs, permissive
+  AI policy), then CrossGL/crosstl (after an open-PR check).
 - Cycle 6 of 2026-11-13 rebuilt the pools with updated-desc ordering (up to 100 per org) and found the
   viable set exhausted for that day: every top candidate was s2-blocked, or k1/k4-excluded. The limiting
   factor is the allow-list's gates plus open competing PRs, not issue-search volume.
