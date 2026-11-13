@@ -82,11 +82,16 @@ def outside_merge_stats(repo: str, since: dt.datetime) -> tuple[int, int]:
 
 
 def label_count(repo: str, label: str) -> int:
-    q = f"repo:{repo}+is:issue+is:open+label:%22{label.replace(' ', '+')}%22"
-    raw = gh(["api", f"search/issues?q={q}", "--jq", ".total_count"])
+    # GraphQL search (1 point each) instead of REST search, which is capped at ~30 requests/min
+    # and silently returned nothing for most repos in the first run.
+    q = f'repo:{repo} is:issue is:open label:"{label}"'
+    query = 'query($q:String!){search(query:$q,type:ISSUE,first:1){issueCount}}'
+    raw = gh(["api", "graphql", "-f", f"query={query}", "-f", f"q={q}"])
+    if not raw:
+        return -1
     try:
-        return int((raw or "").strip())
-    except ValueError:
+        return int(json.loads(raw)["data"]["search"]["issueCount"])
+    except (json.JSONDecodeError, KeyError, TypeError, ValueError):
         return -1
 
 
