@@ -41,7 +41,7 @@ jobs:
           python-version: "3.12"
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - name: Verify the claim
         env:
           GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
