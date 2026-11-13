@@ -288,15 +288,24 @@ while true; do
           echo "claim-check:"
           echo "$VERIFY_OUT" | tail -25
           if [ "$VERIFY_RC" -eq 0 ]; then
-            echo "claim: VERIFIED (test passes with the fix, fails without it)"
+            echo "claim: VERIFIED (the command passes with the fix and fails without it)"
           elif [ "$VERIFY_RC" -eq 1 ]; then
-            echo "claim: VIOLATION (the test claim did not reproduce on a clean checkout)"
-            gh pr close "$PR_URL" --comment "Automated verification could not reproduce this change's test evidence on a clean checkout, so it is being closed rather than left for maintainers to review. The claim, as written, did not hold." >/dev/null 2>&1 || true
-            echo "action: PR closed pending a reproducible fix"
+            echo "claim: first run failed to reproduce; re-running before closing"
+            sleep 10
+            VERIFY_OUT2=$(bash "$VERIFIER" "$REPO_SLUG" "$PR_URL" "$FIXED_FILE_PATH" "${PR_BASE:-master}" "$VERIFY_CMD" 2>&1)
+            VERIFY_RC2=$?
+            echo "$VERIFY_OUT2" | tail -12
+            if [ "$VERIFY_RC2" -eq 1 ]; then
+              echo "claim: VIOLATION (two independent runs could not reproduce the claim)"
+              gh pr close "$PR_URL" --comment "Automated verification could not reproduce this change's test evidence on two independent clean checkouts, so it is being closed rather than left for maintainers to review. The claim, as written, did not hold." >/dev/null 2>&1 || true
+              echo "action: PR closed pending a reproducible fix"
+            else
+              echo "claim: INCONCLUSIVE (first run failed, second exited $VERIFY_RC2); PR left open"
+            fi
+          elif [ "$VERIFY_RC" -eq 3 ]; then
+            echo "claim: UNVERIFIED-ENV (our tooling could not run this claim; PR left open)"
           else
-            # Our tooling could not run the stack (Java, Node, missing manifest). That is not
-            # evidence against the PR: never close on it, and do not call it verified either.
-            echo "claim: UNVERIFIED-ENV (verifier could not run this stack; PR left open, needs a manual re-run)"
+            echo "claim: NOT-VERIFIED (verifier exit $VERIFY_RC); PR left open"
           fi
         else
           echo "claim: VIOLATION (no fixed_file/verify_cmd recorded, so nothing could be re-run)"

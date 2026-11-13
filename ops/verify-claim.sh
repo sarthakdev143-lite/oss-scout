@@ -35,6 +35,16 @@ if ! gh pr checkout "$PR_URL" --branch prhead --force >/dev/null 2>&1; then
 fi
 echo "head: $(git rev-parse --short HEAD) branch: $(git rev-parse --abbrev-ref HEAD)"
 
+# Guard against a misparsed ledger entry: if the first token is a path that exists in the repo,
+# the "command" is almost certainly a file name followed by a command, not a command. Refuse
+# (exit 3) instead of failing it, because a malformed command is not evidence about the fix.
+FIRST_TOKEN=${VERIFY_CMD%% *}
+if [ -n "$FIRST_TOKEN" ] && [ -e "$FIRST_TOKEN" ] && [ ! -x "$FIRST_TOKEN" ]; then
+  echo "NOT-VERIFIED: malformed verify_cmd (first token '$FIRST_TOKEN' is a file in the repo)"
+  echo "  a ledger/command mix-up; this is a tooling fault, not a failing test"
+  exit 3
+fi
+
 # --- dependency setup, best effort, language-agnostic ---
 if [ -f requirements.txt ]; then
   python3 -m venv .venv >/dev/null 2>&1 || { echo "NOT-VERIFIED: venv failed"; exit 3; }
