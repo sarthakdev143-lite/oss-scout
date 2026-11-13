@@ -39,13 +39,8 @@
       "xerial/sqlite-jdbc",
       "neomjs/neo",
       "homarr-labs/homarr",
-      "ahmadrosid/nakama",
-      "GoDiao/dreamcoder",
       "apache/amoro",
-      "meshery/meshery.io",
-      "all-contributors/app",
       "layer5io/layer5",
-      "CatVinci-Studio/Textus",
       "soxoj/maigret"
     ],
     "deny": []
