@@ -1,6 +1,6 @@
 # VPS Automation — paste ready, fill nothing
 
-Agent: do everything below end-to-end. Do not ask for repo names, paths, or tokens. Derive everything. Model for all 24/7 work is always `opencode-go/muse-spark-1.3-contributor`. Never use deepseek or any other model.
+Agent: do everything below end-to-end. Do not ask for repo names, paths, or tokens. Derive everything. Model for all 24/7 work is always `opencode-go/deepseek-v4.1-flash#max` (OpenCode Go). Do not switch models mid-run without the owner asking.
 
 ## 0. Detect what this project is
 
@@ -24,7 +24,7 @@ Write answers at the top of `VPS.md` under `## Limits for this project` (this fi
 ## Limits for this project
 
 - Time: 2h/day, 02:00-04:00 UTC (07:30-09:30 IST), no end date
-- Budget: no cap except time window (muse-spark via OpenCode Go)
+- Budget: no cap except time window (deepseek-v4.1-flash#max via OpenCode Go)
 - Stop: never stop early, keep logging
 - Daily: 1 day = 1 branch, pushed every cycle
 
@@ -122,7 +122,7 @@ while true; do
     echo "Commit to $BRANCH only. Update findings/daily/$TODAY.md and append to findings/24-7.log and findings/LOG.md."
   } >> "$PROMPT_FILE"
   MSG="Today is $TODAY branch $BRANCH. Read the attached brief and do one cycle."
-  opencode run --model opencode-go/muse-spark-1.3-contributor -f "$PROMPT_FILE" "$MSG" >> findings/24-7.log 2>&1
+  opencode run --model "opencode-go/deepseek-v4.1-flash#max" -f "$PROMPT_FILE" "$MSG" >> findings/24-7.log 2>&1
   rm -f "$PROMPT_FILE"
   echo "[$(date -u +%FT%TZ)] cycle $CYCLE exit=$? branch=$BRANCH daily-push" >> findings/24-7.log
   git add findings/daily/"$TODAY".md findings/LOG.md 2>/dev/null || true
@@ -132,7 +132,7 @@ while true; do
 done
 ```
 
-Start: `chmod +x run-research.sh; bash -n run-research.sh; tmux kill-session -t research 2>/dev/null; tmux new-session -d -s research -c ~/<basename> "bash -lc 'bash run-research.sh'"`. Verify `ps aux | grep muse-spark` + `tail findings/24-7.log`.
+Start: `chmod +x run-research.sh; bash -n run-research.sh; tmux kill-session -t research 2>/dev/null; tmux new-session -d -s research -c ~/<basename> "bash -lc 'bash run-research.sh'"`. Verify `ps aux | grep deepseek` + `tail findings/24-7.log`.
 
 ## 4B. DEVELOPMENT workflow (VPS_TYPE=development)
 
@@ -157,5 +157,5 @@ GitHub `sarthakdev143-lite/<basename>`: `main` + daily `origin/research/vps-*` (
 - `bash -n` syntax error on opencode line: restore this exact script, never hand-edit that line.
 - `checkout blocked by local changes`: `git stash push -m wip --keep-index`, checkout/merge, `git stash pop`.
 - Pull says diverging: `git fetch origin; git checkout main; git merge --ff-only origin/main; git checkout <daily-branch>; git merge main`.
-- Wrong model in logs: stop, fix script to `opencode-go/muse-spark-1.3-contributor`, kill tmux, restart.
+- Wrong model in logs: stop, fix script to `opencode-go/deepseek-v4.1-flash#max`, kill tmux, restart.
 - 8x-desktops token fails: generate a fresh one in the Desktops portal, revoke the old one.

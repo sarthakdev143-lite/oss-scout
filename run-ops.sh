@@ -51,6 +51,7 @@ MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-2}
 RUN_MINUTES=${RUN_MINUTES:-120}   # 2h/day fits the Codespaces free quota; CI runs one window then exits
 RUN_ONCE=${RUN_ONCE:-0}           # 1 = exit when the window ends or the quota is met (GitHub Actions)
 FORCE_WINDOW=${FORCE_WINDOW:-0}   # 1 = treat process start as the window start
+MODEL="${MODEL:-opencode-go/deepseek-v4.1-flash#max}"
 
 # GitHub's scheduler is routinely late (observed: 6.5h). A wall-clock window would therefore be
 # already over when the job finally starts, so a single-run job always opens its own window.
@@ -60,7 +61,7 @@ fi
 LOG="docs/daily-24-7.log"
 mkdir -p docs/daily "$STATE_DIR"
 
-echo "[$(date -u +%FT%TZ)] ops boot root=$ROOT state=$STATE_DIR window ${START_HOUR_UTC}:00 UTC +${RUN_MINUTES}min max ${MAX_SUBMITS_PER_DAY}/day run_once=$RUN_ONCE: $(git rev-parse --short HEAD 2>/dev/null)" >> "$LOG"
+echo "[$(date -u +%FT%TZ)] ops boot root=$ROOT state=$STATE_DIR model=$MODEL window ${START_HOUR_UTC}:00 UTC +${RUN_MINUTES}min max ${MAX_SUBMITS_PER_DAY}/day run_once=$RUN_ONCE: $(git rev-parse --short HEAD 2>/dev/null)" >> "$LOG"
 
 sleep_until_next_day() {
   NEXT_DAY=$(date -u -d "tomorrow" +%F)
@@ -147,7 +148,12 @@ while true; do
     echo "2. Do the pipeline YOURSELF (the local scheduler has no LLM host, so ticks alone never start work; you are the worker): (a) check caps via status + today's SUBMITTED file, stop if quota met; (b) rotation: pick the next allow-listed org with no submission in the last 2 days; (c) run one scheduler tick for follow-ups only; (d) find ONE maintainer-filed issue with target labels via gh (verify labels, recent maintainer activity, CI, AI policy); none eligible = log the reason in docs/daily/$TODAY.md and end the cycle with zero submissions; (e) implement in a clean /tmp workspace + docker sandbox (baseline first, failing test first for bugs, minimal diff); (f) verify gate + critic self-review at 0.85 + strict security pass; one issue per cycle max."
     echo "3. Submit a PR ONLY if ALL hold: verification gate passes, critic approves, strict security review passes, repo AI policy is clear, disclosure line present, diff within limits, caps allow it."
     echo "4. Submit with gh using the write token only: fork, push the exact reviewed commit, open PR with disclosure. Any doubt = skip, record reason in docs/daily/$TODAY.md."
-    echo "5. Append one line per submitted PR to docs/daily/SUBMITTED-$TODAY.md: '- <repo> <PR-URL> <digest> <code+tests|docs-only> <maintainer-issue-URL>'. No line without a real maintainer-issue URL."
+    echo "5. Append one line per submitted PR to docs/daily/SUBMITTED-$TODAY.md, exactly these 8 fields:"
+    echo "   '- <owner/repo> <PR-URL> <digest> <code+tests|docs-only> <maintainer-issue-URL> <test_path> <fixed_file> <base_branch>'"
+    echo "   The last three are what the harness uses to RE-RUN your test without you: the test file you added or extended,"
+    echo "   the source file your fix changed, and the PR base branch. Omit them and the submission is recorded as unverified."
+    echo "   Never write a test result you did not obtain by running the command in this session: the harness re-runs it and a"
+    echo "   mismatch closes the PR automatically."
     echo "6. Stop after $MAX_SUBMITS_PER_DAY submissions. Update docs/daily/$TODAY.md with what ran, skipped, and why."
     echo "7. Rotate orgs across days: do not submit twice to the same org on consecutive days unless a maintainer asked for a follow-up."
     echo "8. Every cycle, check your previously submitted OPEN PRs for maintainer comments; address actionable feedback within 24h by updating the PR. Responsiveness is part of the quality bar."
@@ -165,7 +171,7 @@ while true; do
   MSG="Today is $TODAY. Run one autonomous contributor cycle under the autonomy rules."
   # Bound one cycle: a hung agent must not hold the job until the 6h runner limit.
   timeout --signal=TERM "${CYCLE_TIMEOUT_MIN:-45}m" \
-    opencode run --model opencode-go/muse-spark-1.3-contributor -f "$PROMPT_FILE" "$MSG" >> "$LOG" 2>&1
+    opencode run --model "$MODEL" -f "$PROMPT_FILE" "$MSG" >> "$LOG" 2>&1
   rm -f "$PROMPT_FILE"
   echo "[$(date -u +%FT%TZ)] ops cycle exit=$? daily-push" >> "$LOG"
 
@@ -211,6 +217,26 @@ while true; do
           else
             echo "docs-quota: OK"
           fi
+        fi
+        # Independent re-run of the claimed test. Runs here, by the harness, not the agent.
+        REPO_SLUG=$(echo "$line" | awk '{print $2}')
+        TEST_PATH=$(echo "$line" | awk '{print $7}')
+        FIXED_FILE_PATH=$(echo "$line" | awk '{print $8}')
+        PR_BASE=$(gh pr view "$PR_URL" --json baseRefName -q '.baseRefName' 2>/dev/null)
+        if [ -n "$TEST_PATH" ] && [ -n "$FIXED_FILE_PATH" ]; then
+          VERIFY_OUT=$(bash "$ROOT/ops/verify-claim.sh" "$REPO_SLUG" "$PR_URL" "$TEST_PATH" "$FIXED_FILE_PATH" "${PR_BASE:-master}" 2>&1 | tail -25)
+          VERIFY_RC=$?
+          echo "claim-check:"
+          echo "$VERIFY_OUT"
+          if [ "$VERIFY_RC" -ne 0 ]; then
+            echo "claim: VIOLATION (test claim did not reproduce; see above)"
+            gh pr close "$PR_URL" --comment "Automated verification could not reproduce this change's test evidence on a clean checkout, so it is being closed rather than left for maintainers to review. The claim, as written, did not hold." >/dev/null 2>&1 || true
+            echo "action: PR closed pending a reproducible fix"
+          else
+            echo "claim: VERIFIED (test passes with the fix, fails without it)"
+          fi
+        else
+          echo "claim: VIOLATION (no test_path/fixed_file recorded, so nothing could be re-run)"
         fi
       } >> docs/daily/AUDIT-"$TODAY".md
     done < "$SUBMIT_FILE"
