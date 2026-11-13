@@ -61,6 +61,12 @@ fi
 LOG="docs/daily-24-7.log"
 mkdir -p docs/daily "$STATE_DIR"
 
+# Snapshot the brief BEFORE any branch switch: the daily branch can be older than main, and the
+# agent must always receive the current rules, not whatever a stale branch still contains.
+BRIEF_SNAPSHOT=$(mktemp)
+cat VPS.md VPS_PLAN.md > "$BRIEF_SNAPSHOT" 2>/dev/null || true
+trap 'rm -f "$BRIEF_SNAPSHOT"' EXIT
+
 echo "[$(date -u +%FT%TZ)] ops boot root=$ROOT state=$STATE_DIR model=$MODEL window ${START_HOUR_UTC}:00 UTC +${RUN_MINUTES}min max ${MAX_SUBMITS_PER_DAY}/day run_once=$RUN_ONCE: $(git rev-parse --short HEAD 2>/dev/null)" >> "$LOG"
 
 sleep_until_next_day() {
@@ -133,7 +139,7 @@ while true; do
   echo "[$(date -u +%FT%TZ)] ops cycle start branch=$BRANCH submits=$SUBMITS" >> "$LOG"
 
   PROMPT_FILE=$(mktemp)
-  cat VPS.md VPS_PLAN.md > "$PROMPT_FILE"
+  cat "$BRIEF_SNAPSHOT" > "$PROMPT_FILE"
   {
     echo ""
     echo "Today is $TODAY. Repo root: $ROOT. Config: $STATE_DIR/oss-scout.config.json. Already submitted today: $SUBMITS (max $MAX_SUBMITS_PER_DAY). Branch $BRANCH is checked out."
