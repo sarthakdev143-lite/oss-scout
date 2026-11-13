@@ -21,7 +21,17 @@
       "astropy/astropy",
       "freeCodeCamp/freeCodeCamp",
       "sugarlabs/musicblocks-v4",
-      "wagtail/wagtail.org"
+      "wagtail/wagtail.org",
+      "neomjs/neo",
+      "homarr-labs/homarr",
+      "layer5io/layer5",
+      "xerial/sqlite-jdbc",
+      "apache/amoro",
+      "all-contributors/app",
+      "lingdojo/kana-dojo",
+      "suitenumerique/docs",
+      "Apicurio/apicurio-registry",
+      "CrossGL/crosstl"
     ],
     "deny": []
   },

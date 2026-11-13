@@ -41,7 +41,34 @@ This is the primary selection signal: volume follows merge rate, not effort.
 | jenkinsci/credentials-plugin | 20 | 0 | 0% | 1 | 0 | 0 | avoid |
 | publiclab/plots2 | 4 | 0 | 0% | 1 | 138 | 141 | dormant |
 
+## Discovery pass (2026-11-14, labeled-issue search → merge-rate ranking)
+
+Found 24 repos carrying live `help wanted` / `good first issue`. Added the ones that are real,
+maintained communities with genuine supply:
+
+| repo | outside | merged | rate | gfi | hw | bug |
+|---|---|---|---|---|---|---|
+| neomjs/neo | 100 | 85 | 85% | 21 | 21 | 5 |
+| homarr-labs/homarr | 44 | 35 | 80% | 4 | 0 | 16 |
+| xerial/sqlite-jdbc | 45 | 39 | 87% | 1 | 4 | 1 |
+| apache/amoro | 88 | 59 | 67% | 3 | 4 | 0 |
+| all-contributors/app | 53 | 32 | 60% | 4 | 4 | 0 |
+| layer5io/layer5 | 97 | 54 | 56% | 34 | 129 | 0 |
+| suitenumerique/docs | 54 | 19 | 35% | 11 | 1 | 39 |
+| lingdojo/kana-dojo | 100 | 35 | 35% | 174 | 251 | 79 |
+| Apicurio/apicurio-registry | 57 | 19 | 33% | 13 | 23 | 0 |
+| CrossGL/crosstl | 56 | 21 | 38% | 11 | 6 | 395 |
+
+Not added, despite good numbers: `GoDiao/dreamcoder` (71%), `CatVinci-Studio/Textus` (54%),
+`heygen-com/hyperframes` (32%), `ahmadrosid/nakama` (78%) — thin or unverifiable community
+standing, so reputation per merged PR is questionable. `grafana`, `keycloak`, `PipedreamHQ`,
+`apache/seatunnel`, `import-js` have big supply but merge 0–28% of outside PRs; not worth the
+effort until the merge picture changes.
+
+Re-run any time: `gh workflow run repo-scout.yml -f discover=true -f min_stars=300`.
+
 ## Consequence for the allow-list
+
 
 Active set = repos with a real merge rate and actual labeled supply, excluding known
 AI/CLA/assignment gates: OWASP/OWASP-Hunting, OWASP/wstg, OWASP/owasp-mastg,
