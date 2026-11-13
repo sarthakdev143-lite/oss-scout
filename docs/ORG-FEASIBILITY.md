@@ -72,7 +72,7 @@ wording is read and accepted.
 | django | CLA + triage process | contributor agreement required | blocked until CLA |
 | openmrs | process-heavy; some repos are tooling | querystore#80 is `.claude/` tooling (out of scope) | selective |
 | LibreHealth | no usable repo pool | GitHub search returned HTTP 422 | skip |
-| OpenRefine | none found; agents allowed | probe 2026-11-13: gfi 5, help-wanted 19, no CLA; `AGENTS.md` tells agents to run `./refine lint` and add tests. Candidate #6289 is blocked by open PR #8020 (issue-level, not an org gate). | **USABLE** |
+| OpenRefine | none found; agents allowed | probe 2026-11-13: gfi 2, help-wanted 11, tests 6 unassigned (19 total); no CLA; `AGENTS.md` tells agents to run `./refine lint` and add tests. The real bug label is `Type: Bug` (not `bug`): only 2 open unassigned, both non-maintainer. #6289 blocked by open PR #8020, #1858 by #7958. #5985 (Cypress `.tar.gz`) is obsolete after #7508 replaced `cypress-file-upload` with native `selectFile`; remaining test issues are harness/CI work. | **USABLE but thin today** |
 | scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
 | pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
 | astropy | **AI policy prohibits agent PRs** | `astropy/astropy-project/policies/ai-policy.md`: "Autonomous workflows (agents) are not human contributors... or we will close the PR." | **BLOCKED for autonomous work** |
@@ -81,8 +81,8 @@ wording is read and accepted.
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
 | scipy | none found | probe: gfi 3 only | low yield |
 | numpy / matplotlib / networkx | none found | probe: 0 on all three labels | low yield |
-| freeCodeCamp | AI in code allowed; no CLA found | contributing FAQ: AI is "OK in code" but "not OK in comments/responses". Probe 2026-11-13: 8 target-labeled unassigned; #71399 explicitly not open for contribution; most others are curricula/design. | **thin — verify per issue** |
-| wagtail.org | no CLA/AI gate found | probe 2026-11-13: 11 target-labeled unassigned; #652 blocked by open PR #658; #602 last maintainer activity 2026-03-12 (>180d stale); no CONTRIBUTING file | **thin; stale/contested** |
+| freeCodeCamp | AI in code allowed; no CLA found | contributing FAQ: AI is "OK in code" but "not OK in comments/responses". Probe 2026-11-13: 8 target-labeled unassigned; #71399 carries the "not currently open for contribution" banner and open PR #71601; #71609 has open PR #71615; #70526 has open PR #71617 and lives in `.github/` (k1). | **thin — verify per issue** |
+| wagtail.org | no CLA/AI gate found | probe 2026-11-13: 11 target-labeled unassigned (help wanted 1, bug 10); #652 blocked by open PR #658; #602 last maintainer activity 2026-03-12 (>180d stale); #75 blocked on upstream `wagtail/wagtail#14666` (OPEN) after maintainers chose teaser-only feeds; #321 last maintainer activity 2025-01-02. No CONTRIBUTING file. | **thin; stale/contested** |
 
 ## Practical consequences
 
@@ -96,3 +96,6 @@ wording is read and accepted.
   2026-11-13 did. That standard is the difference between a real hold and a filter eating the pool.
 - If throughput must rise, the lever is **more orgs without CLA/assignment gates**, not a looser
   quality bar.
+- Cycle 6 of 2026-11-13 rebuilt the pools with updated-desc ordering (up to 100 per org) and found the
+  viable set exhausted for that day: every top candidate was s2-blocked, or k1/k4-excluded. The limiting
+  factor is the allow-list's gates plus open competing PRs, not issue-search volume.
