@@ -141,6 +141,28 @@ jobs:
           export OSS_SCOUT_STATE_DIR="$HOME/.oss-scout"
           bash run-ops.sh
 
+      - name: Summary
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+        run: |
+          set -uo pipefail
+          {
+            echo "## oss-scout daily summary ($(date -u +%F))"
+            echo
+            echo "**Today's ledger** (\`docs/daily/SUBMITTED-$(date -u +%F).md\`):"
+            echo '```'
+            cat "docs/daily/SUBMITTED-$(date -u +%F).md" 2>/dev/null | tail -5 || echo "(no submissions)"
+            echo '```'
+            echo
+            echo "**Recent PRs by this account** (open / merged / closed):"
+            echo '```'
+            gh pr list --author sarthakdev143-lite --state all --limit 25 \
+              --json repository,number,state,title,createdAt \
+              --template '{{range .}}{{.repository.name}}#{{.number}} {{.state}} {{.createdAt}} {{.title}}{{"\n"}}{{end}}' 2>/dev/null | head -25 || echo "(unavailable)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
