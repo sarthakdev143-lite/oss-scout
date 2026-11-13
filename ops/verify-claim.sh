@@ -19,11 +19,19 @@ cd "$WORK" || exit 2
 
 BRANCH=$(gh pr view "$PR_URL" --json headRefName -q '.headRefName' 2>/dev/null)
 if [ -z "$BRANCH" ]; then echo "NOT-VERIFIED: cannot read PR head branch (auth or PR gone)"; exit 2; fi
-if ! git clone --quiet --branch "$BRANCH" "https://github.com/$REPO.git" repo 2>/dev/null; then
-  echo "NOT-VERIFIED: clone of $REPO@$BRANCH failed"; exit 2
+
+# A PR head can live on a fork, so clone the base repo and check the PR out instead of assuming
+# the branch exists upstream.
+if ! gh repo clone "$REPO" repo -- --quiet >/dev/null 2>&1; then
+  echo "NOT-VERIFIED: clone of $REPO failed"; exit 2
 fi
 cd repo || exit 2
-echo "head: $(git rev-parse --short HEAD) branch: $BRANCH"
+if ! gh pr checkout "$PR_URL" --branch prhead --force >/dev/null 2>&1; then
+  if ! git fetch --quiet origin "$BRANCH" >/dev/null 2>&1 || ! git checkout --quiet "$BRANCH" >/dev/null 2>&1; then
+    echo "NOT-VERIFIED: could not check out $BRANCH (neither a fork PR checkout nor an upstream branch)"; exit 2
+  fi
+fi
+echo "head: $(git rev-parse --short HEAD) branch: $(git rev-parse --abbrev-ref HEAD)"
 
 if [ ! -f "$TEST_PATH" ]; then echo "NOT-VERIFIED: test file $TEST_PATH does not exist on the branch"; exit 1; fi
 
