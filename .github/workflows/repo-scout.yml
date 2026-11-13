@@ -1,0 +1,110 @@
+name: repo-scout
+
+# Ranks candidate repos by the only metric that matters for both volume and reputation:
+# how often OUTSIDE contributors' PRs actually get merged. Volume follows merge rate, not effort.
+on:
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: "space-separated owner/repo list (blank = built-in candidate set)"
+        type: string
+        default: ""
+      since_days:
+        description: "look-back window"
+        type: string
+        default: "90"
+
+permissions:
+  contents: read
+
+jobs:
+  rank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Rank
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+          EXTRA: ${{ inputs.repos }}
+          SINCE_DAYS: ${{ inputs.since_days }}
+        run: |
+          set -uo pipefail
+          DEFAULT="OWASP/OWASP-Hunting OWASP/SecurityShepherd OWASP/wstg OWASP/owasp-mastg \
+          zulip/zulip zulip/zulip-desktop oppia/oppia jenkinsci/jenkins jenkinsci/git-plugin \
+          jenkinsci/credentials-plugin RocketChat/Rocket.Chat RocketChat/Rocket.Chat.js.SDK \
+          processing/p5.js processing/p5.js-web-editor wagtail/wagtail wagtail/wagtail.org \
+          openmrs/openmrs-core openmrs/openmrs-module-webservices.rest django/django \
+          django/code.djangoproject.com CircuitVerse/CircuitVerse publiclab/plots2 \
+          sugarlabs/musicblocks-v4 OpenRefine/OpenRefine scikit-learn/scikit-learn \
+          pandas-dev/pandas laurent22/joplin astropy/astropy sympy/sympy beeware/briefcase \
+          freeCodeCamp/freeCodeCamp networkx/networkx scipy/scipy numpy/numpy"
+          LIST="${EXTRA:-$DEFAULT}"
+
+          echo "repo|outside_prs|outside_merged|merge_rate|gfi|hw|bug" > /tmp/rank.csv
+
+          for r in $LIST; do
+            owner="${r%%/*}"; name="${r##*/}"
+            # GraphQL: last N PRs in the window, with authorAssociation and merge state.
+            q='query($owner:String!,$name:String!){
+              repository(owner:$owner,name:$name){
+                pullRequests(last:100, states:[OPEN,MERGED,CLOSED], orderBy:{field:UPDATED_AT,direction:DESC}){
+                  nodes{ mergedAt createdAt authorAssociation author{login} }
+                }
+              }
+            }'
+            json=$(gh api graphql -f query="$q" -f owner="$owner" -f name="$name" 2>/dev/null)
+            if [ -z "$json" ]; then
+              echo "$r|ERR|ERR|ERR|?|?|?" >> /tmp/rank.csv; continue
+            fi
+            read -r ototal omerged < <(printf '%s' "$json" | SINCE_DAYS="$SINCE_DAYS" python3 -c '
+import json,sys,os,datetime as dt
+since=dt.datetime.now(dt.timezone.utc)-dt.timedelta(days=int(os.environ.get("SINCE_DAYS","90")))
+d=json.load(sys.stdin)
+nodes=(d.get("data",{}).get("repository") or {}).get("pullRequests",{}).get("nodes",[]) or []
+outside={"NONE","CONTRIBUTOR","FIRST_TIME_CONTRIBUTOR","FIRST_TIMER"}
+t=m=0
+for n in nodes:
+    if (n.get("authorAssociation") or "") not in outside: continue
+    created=n.get("createdAt") or ""
+    try:
+        ts=dt.datetime.fromisoformat(created.replace("Z","+00:00"))
+    except Exception:
+        continue
+    if ts < since: continue
+    t+=1
+    if n.get("mergedAt"): m+=1
+print(t,m)
+')
+            rate="n/a"
+            if [ "${ototal:-0}" -ge 10 ]; then
+              rate=$(python3 -c "print(f'{100*$omerged/$ototal:.0f}%')")
+            fi
+            gfi=$(gh api "search/issues?q=repo:$r+is:issue+is:open+label:%22good+first+issue%22" --jq .total_count 2>/dev/null || echo "?")
+            hw=$(gh api "search/issues?q=repo:$r+is:issue+is:open+label:%22help+wanted%22" --jq .total_count 2>/dev/null || echo "?")
+            bug=$(gh api "search/issues?q=repo:$r+is:issue+is:open+label:bug" --jq .total_count 2>/dev/null || echo "?")
+            echo "$r|${ototal:-0}|${omerged:-0}|$rate|$gfi|$hw|$bug" >> /tmp/rank.csv
+            echo "$r outside=$ototal merged=$omerged rate=$rate gfi=$gfi hw=$hw bug=$bug"
+          done
+
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+import csv
+rows=list(csv.DictReader(open('/tmp/rank.csv'), delimiter='|'))
+def num(v):
+    try: return int(v)
+    except: return -1
+def supply(r):
+    return sum(max(0,num(r.get(k,'0'))) for k in ('gfi','hw','bug'))
+def rate(r):
+    v=r.get('merge_rate','')
+    return int(v.rstrip('%')) if v.endswith('%') else -1
+rows.sort(key=lambda r:(rate(r), supply(r)), reverse=True)
+print("| repo | outside PRs | merged | merge rate | gfi | hw | bug | verdict |")
+print("|---|---|---|---|---|---|---|---|")
+for r in rows:
+    rt=rate(r); sp=supply(r)
+    if rt>=50 and sp>=10: v="✅ strong"
+    elif rt>=30 and sp>=5: v="🟡 usable"
+    elif rt<0: v="❔ unknown"
+    else: v="⛔ weak"
+    print(f"| {r['repo']} | {r['outside_prs']} | {r['outside_merged']} | {r['merge_rate']} | {r['gfi']} | {r['hw']} | {r['bug']} | {v} |")
+PY
