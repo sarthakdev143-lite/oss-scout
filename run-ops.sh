@@ -50,7 +50,13 @@ START_MIN_UTC=${START_MIN_UTC:-0}
 MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-2}
 RUN_MINUTES=${RUN_MINUTES:-120}   # 2h/day fits the Codespaces free quota; CI runs one window then exits
 RUN_ONCE=${RUN_ONCE:-0}           # 1 = exit when the window ends or the quota is met (GitHub Actions)
-FORCE_WINDOW=${FORCE_WINDOW:-0}   # 1 = treat "now" as the window start (manual test run)
+FORCE_WINDOW=${FORCE_WINDOW:-0}   # 1 = treat process start as the window start
+
+# GitHub's scheduler is routinely late (observed: 6.5h). A wall-clock window would therefore be
+# already over when the job finally starts, so a single-run job always opens its own window.
+if [ "$RUN_ONCE" = "1" ]; then
+  FORCE_WINDOW=1
+fi
 LOG="docs/daily-24-7.log"
 mkdir -p docs/daily "$STATE_DIR"
 
