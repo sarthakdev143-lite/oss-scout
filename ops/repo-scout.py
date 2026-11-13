@@ -154,6 +154,11 @@ def main() -> int:
     ap.add_argument("--discover", action="store_true", help="build the candidate list from live labeled issues")
     ap.add_argument("--min-stars", type=int, default=200)
     ap.add_argument("--limit", type=int, default=40, help="max discovered repos to rank")
+    ap.add_argument("--apply-config", default="", help="rewrite this config's repos.allow from pinned + the ranking")
+    ap.add_argument("--pinned", default="ops/pinned-repos.txt")
+    ap.add_argument("--max-total", type=int, default=30)
+    ap.add_argument("--min-rate", type=int, default=40, help="merge-rate floor for automatic inclusion")
+    ap.add_argument("--min-supply", type=int, default=5, help="labeled-issue floor for automatic inclusion")
     args = ap.parse_args()
 
     if args.discover:
@@ -206,6 +211,36 @@ def main() -> int:
     if args.summary:
         with open(args.summary, "a", encoding="utf-8") as fh:
             fh.write("\n" + table + "\n")
+
+    if args.apply_config:
+        pinned: list[str] = []
+        try:
+            with open(args.pinned, encoding="utf-8") as fh:
+                pinned = [ln.strip() for ln in fh if ln.strip() and not ln.startswith("#")]
+        except FileNotFoundError:
+            print(f"warning: {args.pinned} not found; pinned set is empty")
+
+        picked = [
+            r["repo"]
+            for r in rows
+            if r["rate"] >= args.min_rate and r["supply"] >= args.min_supply and r["repo"] not in pinned
+        ]
+        room = max(0, args.max_total - len(pinned))
+        allow = pinned + picked[:room]
+
+        with open(args.apply_config, encoding="utf-8") as fh:
+            cfg = json.load(fh)
+        before = list((cfg.get("repos") or {}).get("allow") or [])
+        cfg.setdefault("repos", {})["allow"] = allow
+        with open(args.apply_config, "w", encoding="utf-8") as fh:
+            json.dump(cfg, fh, indent=2)
+            fh.write("\n")
+
+        added = [r for r in allow if r not in before]
+        removed = [r for r in before if r not in allow]
+        print(f"\nconfig updated: {len(allow)} repos (pinned {len(pinned)}, discovered {len(allow) - len(pinned)})")
+        print(f"  added:   {', '.join(added) if added else '(none)'}")
+        print(f"  removed: {', '.join(removed) if removed else '(none)'}")
     return 0
 
 

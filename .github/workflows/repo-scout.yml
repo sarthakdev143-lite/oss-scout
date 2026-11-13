@@ -1,13 +1,15 @@
 name: repo-scout
 
-# Ranks candidate repos by the only metric that matters for both volume and reputation:
-# how often OUTSIDE contributors' PRs actually get merged. Volume follows merge rate, not effort.
-# Logic lives in ops/repo-scout.py so it can be tested and read as code, not YAML.
+# Ranks candidate repos by how often OUTSIDE contributors' PRs actually get merged, then
+# (in apply mode) rewrites the allow-list: pinned repos + the best discovered ones.
+# Runs weekly on its own, so the target set self-corrects without anyone touching it.
 on:
+  schedule:
+    - cron: "0 5 * * 1"   # Mondays 05:00 UTC
   workflow_dispatch:
     inputs:
       repos:
-        description: "space-separated owner/repo list (blank = built-in candidate set)"
+        description: "space-separated owner/repo list (blank = discovery or built-in set)"
         type: string
         default: ""
       since_days:
@@ -15,16 +17,20 @@ on:
         type: string
         default: "90"
       discover:
-        description: "build the list from repos with live labeled issues instead of the built-in set"
+        description: "build the list from repos with live labeled issues"
         type: boolean
-        default: false
+        default: true
       min_stars:
         description: "minimum stars when discovering"
         type: string
-        default: "200"
+        default: "300"
+      apply:
+        description: "rewrite oss-scout.config.autopilot.json from the ranking"
+        type: boolean
+        default: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   rank:
@@ -35,19 +41,31 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Rank repos
         env:
           GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
           REPOS: ${{ inputs.repos }}
           SINCE_DAYS: ${{ inputs.since_days }}
-          DISCOVER: ${{ inputs.discover && '1' || '0' }}
+          DISCOVER: ${{ github.event_name == 'schedule' && '1' || (inputs.discover && '1' || '0') }}
           MIN_STARS: ${{ inputs.min_stars }}
+          APPLY: ${{ github.event_name == 'schedule' && '1' || (inputs.apply && '1' || '0') }}
         run: |
           set -uo pipefail
-          ARGS=(--since-days "$SINCE_DAYS" --summary "$GITHUB_STEP_SUMMARY" --min-stars "$MIN_STARS")
-          if [ "$DISCOVER" = "1" ]; then
-            ARGS+=(--discover)
-          else
-            ARGS+=(--repos "$REPOS")
-          fi
+          ARGS=(--since-days "${SINCE_DAYS:-90}" --summary "$GITHUB_STEP_SUMMARY" --min-stars "${MIN_STARS:-300}")
+          if [ "$DISCOVER" = "1" ]; then ARGS+=(--discover); else ARGS+=(--repos "${REPOS:-}"); fi
+          if [ "$APPLY" = "1" ]; then ARGS+=(--apply-config oss-scout.config.autopilot.json); fi
           python3 ops/repo-scout.py "${ARGS[@]}"
+
+      - name: Commit the refreshed allow-list
+        run: |
+          set -uo pipefail
+          if git diff --quiet -- oss-scout.config.autopilot.json; then
+            echo "allow-list unchanged"
+            exit 0
+          fi
+          git config user.name "sarthakdev143-lite"
+          git config user.email "sarthakdev143.official@gmail.com"
+          git add oss-scout.config.autopilot.json
+          git commit -m "config: weekly repo-scout refresh of the allow-list"
+          git push

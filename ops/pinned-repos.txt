@@ -1,0 +1,11 @@
+# Repos kept in the allow-list regardless of what discovery returns.
+# Curated: GSoC-aligned, verified, or already carrying an open PR. One per line.
+OWASP/OWASP-Hunting
+OWASP/wstg
+OWASP/owasp-mastg
+OpenRefine/OpenRefine
+laurent22/joplin
+astropy/astropy
+freeCodeCamp/freeCodeCamp
+sugarlabs/musicblocks-v4
+wagtail/wagtail.org
