@@ -141,6 +141,21 @@ jobs:
           export OSS_SCOUT_STATE_DIR="$HOME/.oss-scout"
           bash run-ops.sh
 
+      - name: Assert the window did something
+        if: always()
+        run: |
+          set -uo pipefail
+          f="$HOME/.oss-scout/last-run.json"
+          if [ ! -f "$f" ]; then echo "::error::no run record written; the loop did not reach a window boundary"; exit 1; fi
+          cat "$f"
+          cycles=$(python3 -c "import json;print(json.load(open('$f'))['cycles'])")
+          quota=$(python3 -c "import json;print(json.load(open('$f'))['quota_met'])")
+          if [ "$cycles" -eq 0 ] && [ "$quota" -eq 0 ]; then
+            echo "::error::window ran zero cycles and did not stop for quota: this is the silent-no-op failure"
+            exit 1
+          fi
+          echo "window OK: cycles=$cycles quota_met=$quota"
+
       - name: Summary
         if: always()
         env:

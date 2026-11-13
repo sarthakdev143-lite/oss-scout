@@ -80,9 +80,13 @@ sleep_until_next_day() {
 }
 
 # One window per process for CI; forever-loop for a long-lived host.
+CYCLES_RUN=0
+QUOTA_MET_FLAG=0
 window_done() {
+  printf '{"cycles":%d,"quota_met":%d,"today":"%s","ended":"%s"}\n' \
+    "$CYCLES_RUN" "$QUOTA_MET_FLAG" "$TODAY" "$(date -u +%FT%TZ)" > "$STATE_DIR/last-run.json" 2>/dev/null || true
   if [ "$RUN_ONCE" = "1" ]; then
-    echo "[$(date -u +%FT%TZ)] window complete, RUN_ONCE set: exiting 0" >> "$LOG"
+    echo "[$(date -u +%FT%TZ)] window complete, RUN_ONCE set: exiting 0 (cycles=$CYCLES_RUN quota_met=$QUOTA_MET_FLAG)" >> "$LOG"
     exit 0
   fi
   sleep_until_next_day
@@ -122,6 +126,7 @@ while true; do
   touch "$SUBMIT_FILE"
   SUBMITS=$(grep -c . "$SUBMIT_FILE" 2>/dev/null || true)
   if [ "${SUBMITS:-0}" -ge "$MAX_SUBMITS_PER_DAY" ]; then
+    QUOTA_MET_FLAG=1
     window_done
     continue
   fi
@@ -137,6 +142,7 @@ while true; do
     git checkout "$BRANCH" >> "$LOG" 2>&1
   fi
   echo "[$(date -u +%FT%TZ)] ops cycle start branch=$BRANCH submits=$SUBMITS" >> "$LOG"
+  CYCLES_RUN=$((CYCLES_RUN + 1))
 
   PROMPT_FILE=$(mktemp)
   cat "$BRIEF_SNAPSHOT" > "$PROMPT_FILE"
