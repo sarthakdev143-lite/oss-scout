@@ -43,6 +43,47 @@ query($owner:String!,$name:String!){
 
 OUTSIDE = {"NONE", "CONTRIBUTOR", "FIRST_TIME_CONTRIBUTOR", "FIRST_TIMER"}
 
+DISCOVER_QUERY = """
+query($q:String!){
+  search(query:$q,type:ISSUE,first:60){
+    nodes{ ... on Issue { repository { nameWithOwner stargazerCount } } }
+  }
+}
+"""
+
+DISCOVER_SEARCHES = [
+    'label:"help wanted" is:issue is:open archived:false language:Python',
+    'label:"help wanted" is:issue is:open archived:false language:TypeScript',
+    'label:"help wanted" is:issue is:open archived:false language:JavaScript',
+    'label:"help wanted" is:issue is:open archived:false language:Java',
+    'label:"good first issue" is:issue is:open archived:false language:Python',
+    'label:"good first issue" is:issue is:open archived:false language:TypeScript',
+    'label:"good first issue" is:issue is:open archived:false language:JavaScript',
+]
+
+
+def discover(min_stars: int, limit: int) -> list[str]:
+    """Repos that currently carry live labeled issues, filtered by stars. Issue-search first, so
+    every candidate arrives with actual work available rather than just being popular."""
+    seen: dict[str, int] = {}
+    for q in DISCOVER_SEARCHES:
+        raw = gh(["api", "graphql", "-f", f"query={DISCOVER_QUERY}", "-f", f"q={q}"])
+        if not raw:
+            continue
+        try:
+            nodes = json.loads(raw)["data"]["search"]["nodes"]
+        except (json.JSONDecodeError, KeyError, TypeError):
+            continue
+        for node in nodes:
+            repo = (node or {}).get("repository") or {}
+            name = repo.get("nameWithOwner")
+            stars = repo.get("stargazerCount") or 0
+            if not name or stars < min_stars:
+                continue
+            seen[name] = max(seen.get(name, 0), stars)
+    ranked = sorted(seen.items(), key=lambda kv: kv[1], reverse=True)
+    return [name for name, _ in ranked[:limit]]
+
 
 def gh(args: list[str]) -> str | None:
     try:
@@ -110,9 +151,16 @@ def main() -> int:
     ap.add_argument("--repos", default="", help="space separated owner/repo list")
     ap.add_argument("--since-days", type=int, default=90)
     ap.add_argument("--summary", default="", help="markdown summary file to append to")
+    ap.add_argument("--discover", action="store_true", help="build the candidate list from live labeled issues")
+    ap.add_argument("--min-stars", type=int, default=200)
+    ap.add_argument("--limit", type=int, default=40, help="max discovered repos to rank")
     args = ap.parse_args()
 
-    repos = (args.repos.split() if args.repos.strip() else DEFAULT_REPOS)
+    if args.discover:
+        repos = discover(args.min_stars, args.limit)
+        print(f"discovered {len(repos)} repos with live labeled issues (stars>={args.min_stars})", flush=True)
+    else:
+        repos = args.repos.split() if args.repos.strip() else DEFAULT_REPOS
     since = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=args.since_days)
 
     rows = []

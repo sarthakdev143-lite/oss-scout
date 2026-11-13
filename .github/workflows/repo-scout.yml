@@ -14,6 +14,14 @@ on:
         description: "look-back window"
         type: string
         default: "90"
+      discover:
+        description: "build the list from repos with live labeled issues instead of the built-in set"
+        type: boolean
+        default: false
+      min_stars:
+        description: "minimum stars when discovering"
+        type: string
+        default: "200"
 
 permissions:
   contents: read
@@ -32,6 +40,14 @@ jobs:
           GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
           REPOS: ${{ inputs.repos }}
           SINCE_DAYS: ${{ inputs.since_days }}
+          DISCOVER: ${{ inputs.discover && '1' || '0' }}
+          MIN_STARS: ${{ inputs.min_stars }}
         run: |
           set -uo pipefail
-          python3 ops/repo-scout.py --repos "$REPOS" --since-days "$SINCE_DAYS" --summary "$GITHUB_STEP_SUMMARY"
+          ARGS=(--since-days "$SINCE_DAYS" --summary "$GITHUB_STEP_SUMMARY" --min-stars "$MIN_STARS")
+          if [ "$DISCOVER" = "1" ]; then
+            ARGS+=(--discover)
+          else
+            ARGS+=(--repos "$REPOS")
+          fi
+          python3 ops/repo-scout.py "${ARGS[@]}"
