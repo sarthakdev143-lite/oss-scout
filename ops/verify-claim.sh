@@ -60,6 +60,13 @@ if [ -f requirements.txt ] || [ -f pyproject.toml ]; then
   PY=".venv/bin/python"
 elif [ -f package.json ]; then
   echo "NOT-VERIFIED: node project; verification needs an explicit runner"; exit 3
+elif [ "${TEST_PATH##*.}" = "py" ]; then
+  # Python project without a manifest at the root: run the test with pytest alone.
+  python3 -m venv .venv >/dev/null 2>&1 || { echo "NOT-VERIFIED: cannot create venv"; exit 3; }
+  .venv/bin/pip install -q --upgrade pip >/dev/null 2>&1
+  .venv/bin/pip install -q pytest >/dev/null 2>&1
+  echo "deps: no manifest; pytest only"
+  PY=".venv/bin/python"
 else
   echo "NOT-VERIFIED: unrecognised project type"; exit 3
 fi
