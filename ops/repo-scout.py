@@ -43,6 +43,47 @@ query($owner:String!,$name:String!){
 
 OUTSIDE = {"NONE", "CONTRIBUTOR", "FIRST_TIME_CONTRIBUTOR", "FIRST_TIMER"}
 
+DISCOVER_QUERY = """
+query($q:String!){
+  search(query:$q,type:ISSUE,first:60){
+    nodes{ ... on Issue { repository { nameWithOwner stargazerCount } } }
+  }
+}
+"""
+
+DISCOVER_SEARCHES = [
+    'label:"help wanted" is:issue is:open archived:false language:Python',
+    'label:"help wanted" is:issue is:open archived:false language:TypeScript',
+    'label:"help wanted" is:issue is:open archived:false language:JavaScript',
+    'label:"help wanted" is:issue is:open archived:false language:Java',
+    'label:"good first issue" is:issue is:open archived:false language:Python',
+    'label:"good first issue" is:issue is:open archived:false language:TypeScript',
+    'label:"good first issue" is:issue is:open archived:false language:JavaScript',
+]
+
+
+def discover(min_stars: int, limit: int) -> list[str]:
+    """Repos that currently carry live labeled issues, filtered by stars. Issue-search first, so
+    every candidate arrives with actual work available rather than just being popular."""
+    seen: dict[str, int] = {}
+    for q in DISCOVER_SEARCHES:
+        raw = gh(["api", "graphql", "-f", f"query={DISCOVER_QUERY}", "-f", f"q={q}"])
+        if not raw:
+            continue
+        try:
+            nodes = json.loads(raw)["data"]["search"]["nodes"]
+        except (json.JSONDecodeError, KeyError, TypeError):
+            continue
+        for node in nodes:
+            repo = (node or {}).get("repository") or {}
+            name = repo.get("nameWithOwner")
+            stars = repo.get("stargazerCount") or 0
+            if not name or stars < min_stars:
+                continue
+            seen[name] = max(seen.get(name, 0), stars)
+    ranked = sorted(seen.items(), key=lambda kv: kv[1], reverse=True)
+    return [name for name, _ in ranked[:limit]]
+
 
 def gh(args: list[str]) -> str | None:
     try:
@@ -110,9 +151,21 @@ def main() -> int:
     ap.add_argument("--repos", default="", help="space separated owner/repo list")
     ap.add_argument("--since-days", type=int, default=90)
     ap.add_argument("--summary", default="", help="markdown summary file to append to")
+    ap.add_argument("--discover", action="store_true", help="build the candidate list from live labeled issues")
+    ap.add_argument("--min-stars", type=int, default=200)
+    ap.add_argument("--limit", type=int, default=40, help="max discovered repos to rank")
+    ap.add_argument("--apply-config", default="", help="rewrite this config's repos.allow from pinned + the ranking")
+    ap.add_argument("--pinned", default="ops/pinned-repos.txt")
+    ap.add_argument("--max-total", type=int, default=30)
+    ap.add_argument("--min-rate", type=int, default=40, help="merge-rate floor for automatic inclusion")
+    ap.add_argument("--min-supply", type=int, default=5, help="labeled-issue floor for automatic inclusion")
     args = ap.parse_args()
 
-    repos = (args.repos.split() if args.repos.strip() else DEFAULT_REPOS)
+    if args.discover:
+        repos = discover(args.min_stars, args.limit)
+        print(f"discovered {len(repos)} repos with live labeled issues (stars>={args.min_stars})", flush=True)
+    else:
+        repos = args.repos.split() if args.repos.strip() else DEFAULT_REPOS
     since = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=args.since_days)
 
     rows = []
@@ -158,6 +211,36 @@ def main() -> int:
     if args.summary:
         with open(args.summary, "a", encoding="utf-8") as fh:
             fh.write("\n" + table + "\n")
+
+    if args.apply_config:
+        pinned: list[str] = []
+        try:
+            with open(args.pinned, encoding="utf-8") as fh:
+                pinned = [ln.strip() for ln in fh if ln.strip() and not ln.startswith("#")]
+        except FileNotFoundError:
+            print(f"warning: {args.pinned} not found; pinned set is empty")
+
+        picked = [
+            r["repo"]
+            for r in rows
+            if r["rate"] >= args.min_rate and r["supply"] >= args.min_supply and r["repo"] not in pinned
+        ]
+        room = max(0, args.max_total - len(pinned))
+        allow = pinned + picked[:room]
+
+        with open(args.apply_config, encoding="utf-8") as fh:
+            cfg = json.load(fh)
+        before = list((cfg.get("repos") or {}).get("allow") or [])
+        cfg.setdefault("repos", {})["allow"] = allow
+        with open(args.apply_config, "w", encoding="utf-8") as fh:
+            json.dump(cfg, fh, indent=2)
+            fh.write("\n")
+
+        added = [r for r in allow if r not in before]
+        removed = [r for r in before if r not in allow]
+        print(f"\nconfig updated: {len(allow)} repos (pinned {len(pinned)}, discovered {len(allow) - len(pinned)})")
+        print(f"  added:   {', '.join(added) if added else '(none)'}")
+        print(f"  removed: {', '.join(removed) if removed else '(none)'}")
     return 0
 
 

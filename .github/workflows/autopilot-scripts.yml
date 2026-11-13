@@ -41,3 +41,8 @@ jobs:
           python3 -m json.tool .devcontainer/devcontainer.json > /dev/null
           python3 -m json.tool oss-scout.config.autopilot.json > /dev/null
           echo "json ok"
+      - name: ops scripts compile
+        run: |
+          set -euo pipefail
+          python3 -m py_compile ops/repo-scout.py
+          echo "python ok"

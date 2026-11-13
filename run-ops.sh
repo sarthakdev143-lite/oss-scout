@@ -262,8 +262,10 @@ while true; do
         fi
         # Independent re-run of the claimed command. Runs here, by the harness, not the agent.
         REPO_SLUG=$(echo "$line" | awk '{print $2}')
-        FIXED_FILE_PATH=$(echo "$line" | awk '{print $6}')
-        VERIFY_CMD=$(echo "$line" | awk '{for (i=7; i<=NF; i++) printf "%s%s", $i, (i<NF ? " " : "")}')
+        # The ledger line starts with "- ", so owner/repo is field 2 and the
+        # command starts at field 8. Field 1 is the list marker.
+        FIXED_FILE_PATH=$(echo "$line" | awk '{print $7}')
+        VERIFY_CMD=$(echo "$line" | awk '{for (i=8; i<=NF; i++) printf "%s%s", $i, (i<NF ? " " : "")}')
         PR_BASE=$(gh pr view "$PR_URL" --json baseRefName -q '.baseRefName' 2>/dev/null)
         VERIFIER="${VERIFIER_PATH:-$ROOT/ops/verify-claim.sh}"
         FIELD_COUNT=$(echo "$line" | awk '{print NF}')
