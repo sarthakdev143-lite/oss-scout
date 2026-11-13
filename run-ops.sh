@@ -239,17 +239,22 @@ while true; do
         VERIFIER="${VERIFIER_PATH:-$ROOT/ops/verify-claim.sh}"
         if [ ! -f "$VERIFIER" ]; then
           echo "claim: VIOLATION (verifier not found at $VERIFIER; nothing was checked)"
+          echo "action: treat every submission this cycle as unverified"
         elif [ -n "$TEST_PATH" ] && [ -n "$FIXED_FILE_PATH" ]; then
           VERIFY_OUT=$(bash "$VERIFIER" "$REPO_SLUG" "$PR_URL" "$TEST_PATH" "$FIXED_FILE_PATH" "${PR_BASE:-master}" 2>&1)
           VERIFY_RC=$?
           echo "claim-check:"
           echo "$VERIFY_OUT" | tail -25
-          if [ "$VERIFY_RC" -ne 0 ]; then
-            echo "claim: VIOLATION (test claim did not reproduce; verifier exit $VERIFY_RC)"
+          if [ "$VERIFY_RC" -eq 0 ]; then
+            echo "claim: VERIFIED (test passes with the fix, fails without it)"
+          elif [ "$VERIFY_RC" -eq 1 ]; then
+            echo "claim: VIOLATION (the test claim did not reproduce on a clean checkout)"
             gh pr close "$PR_URL" --comment "Automated verification could not reproduce this change's test evidence on a clean checkout, so it is being closed rather than left for maintainers to review. The claim, as written, did not hold." >/dev/null 2>&1 || true
             echo "action: PR closed pending a reproducible fix"
           else
-            echo "claim: VERIFIED (test passes with the fix, fails without it)"
+            # Our tooling could not run the stack (Java, Node, missing manifest). That is not
+            # evidence against the PR: never close on it, and do not call it verified either.
+            echo "claim: UNVERIFIED-ENV (verifier could not run this stack; PR left open, needs a manual re-run)"
           fi
         else
           echo "claim: VIOLATION (no test_path/fixed_file recorded, so nothing could be re-run)"
