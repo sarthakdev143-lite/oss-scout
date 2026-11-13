@@ -27,7 +27,7 @@ jobs:
           DEFAULT="numpy/numpy scipy/scipy sympy/sympy matplotlib/matplotlib pandas-dev/pandas OpenRefine/OpenRefine beeware/briefcase laurent22/joplin freeCodeCamp/freeCodeCamp networkx/networkx scikit-learn/scikit-learn astropy/astropy"
           LIST="${EXTRA:-$DEFAULT}"
           {
-            echo "| repo | stars | pushed | CLA/DCO | AI policy | unassigned labeled |"
+            echo "| repo | stars | pushed | CLA/DCO | AI policy | labels: gfi / help wanted / bug |"
             echo "|---|---|---|---|---|---|"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -48,7 +48,10 @@ jobs:
               if printf '%s' "$txt" | grep -qiE 'AI-generated|LLM-generated|generative AI|AI-assisted|AI contributions'; then ai="mentions ($p)"; break; fi
             done
 
-            supply=$(gh search issues --repo "$r" --state open --label "good first issue" --limit 100 --json number 2>/dev/null | python3 -c 'import json,sys;d=json.load(sys.stdin);print(len(d))' 2>/dev/null) || supply="?"
+            gfi=$(gh search issues --repo "$r" --state open --label "good first issue" --limit 100 --json number 2>/dev/null | python3 -c 'import json,sys;d=json.load(sys.stdin);print(len(d))' 2>/dev/null) || gfi="?"
+            hw=$(gh search issues --repo "$r" --state open --label "help wanted" --limit 100 --json number 2>/dev/null | python3 -c 'import json,sys;d=json.load(sys.stdin);print(len(d))' 2>/dev/null) || hw="?"
+            bugs=$(gh search issues --repo "$r" --state open --label "bug" --limit 100 --json number 2>/dev/null | python3 -c 'import json,sys;d=json.load(sys.stdin);print(len(d))' 2>/dev/null) || bugs="?"
+            supply="gfi=$gfi hw=$hw bug=$bugs"
             echo "| $r | $stars | $pushed | $cla | $ai | $supply |" >> "$GITHUB_STEP_SUMMARY"
-            echo "$r stars=$stars pushed=$pushed cla=$cla ai=$ai gfi=$supply"
+            echo "$r stars=$stars pushed=$pushed cla=$cla ai=$ai $supply"
           done
