@@ -5,11 +5,15 @@ on:
   push:
     paths:
       - "run-ops.sh"
+      - "ops/**"
       - ".devcontainer/**"
+      - ".github/workflows/autopilot-scripts.yml"
   pull_request:
     paths:
       - "run-ops.sh"
+      - "ops/**"
       - ".devcontainer/**"
+      - ".github/workflows/autopilot-scripts.yml"
   workflow_dispatch:
 
 jobs:
