@@ -29,6 +29,7 @@ jobs:
           SINCE_DAYS: ${{ inputs.since_days }}
         run: |
           set -uo pipefail
+          set +e          # the runner shell is invoked with -e; a single failed gh call must not abort the scan
           DEFAULT="OWASP/OWASP-Hunting OWASP/SecurityShepherd OWASP/wstg OWASP/owasp-mastg \
           zulip/zulip zulip/zulip-desktop oppia/oppia jenkinsci/jenkins jenkinsci/git-plugin \
           jenkinsci/credentials-plugin RocketChat/Rocket.Chat RocketChat/Rocket.Chat.js.SDK \
