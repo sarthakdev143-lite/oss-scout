@@ -62,6 +62,19 @@ if [ -f package.json ] && [ ! -d node_modules ]; then
   else npm install --silent >/tmp/npm.log 2>&1 || echo "deps: npm install failed (continuing)"; fi
 fi
 
+# No manifest at all (script-style repos): still give the command a pytest to run, or a bare
+# "pytest ..." verify_cmd fails with 127 and looks like a bad fix instead of missing tooling.
+if [ ! -d .venv ] && [ ! -f package.json ] && [ ! -f pom.xml ]; then
+  if python3 -m venv .venv >/dev/null 2>&1; then
+    .venv/bin/pip install -q --upgrade pip >/dev/null 2>&1
+    .venv/bin/pip install -q pytest >/dev/null 2>&1 || echo "deps: pytest install failed"
+    export PATH="$PWD/.venv/bin:$PATH"
+    echo "deps: no manifest; pytest provided in .venv"
+  else
+    echo "deps: no manifest and no venv; the command must bring its own tooling"
+  fi
+fi
+
 echo "--- positive: \$ $VERIFY_CMD ---"
 sh -c "$VERIFY_CMD" 2>&1 | tail -18
 POS=${PIPESTATUS[0]}
