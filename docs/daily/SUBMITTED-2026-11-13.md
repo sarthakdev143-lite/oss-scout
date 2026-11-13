@@ -1,1 +1,1 @@
-- OWASP/OWASP-Hunting https://github.com/OWASP/OWASP-Hunting/pull/98 cec63ed65aac4cb631fbf2e7edf5ee4a9458ad4b code+tests https://github.com/OWASP/OWASP-Hunting/issues/72 scripts/test_check_duplicates.py scripts/check_duplicates.py main
+- OWASP/OWASP-Hunting https://github.com/OWASP/OWASP-Hunting/pull/98 cec63ed65aac4cb631fbf2e7edf5ee4a9458ad4b code+tests https://github.com/OWASP/OWASP-Hunting/issues/72 scripts/check_duplicates.py pytest scripts/test_check_duplicates.py -q
