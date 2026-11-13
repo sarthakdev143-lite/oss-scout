@@ -67,6 +67,25 @@ effort until the merge picture changes.
 
 Re-run any time: `gh workflow run repo-scout.yml -f discover=true -f min_stars=300`.
 
+## AI-policy verdicts (read 2026-11-14, not inferred)
+
+- **beeware/briefcase — PROHIBITED for this use.** CONTRIBUTING says AI tools are neither encouraged nor
+  prohibited, but the linked AI Policy's *Intentionality* section says: "We do not accept unsolicited
+  pull requests or issues that result from running an autonomous tool over the BeeWare code base." It also
+  requires an `Assisted-by:` trailer and a template checkbox. The 84% merge rate is irrelevant: this is
+  exactly the pattern the policy forbids. **Do not add.**
+- **sympy/sympy — conditional, not implemented.** `AGENTS.md` requires the PR title *and* description to
+  start with the robot emoji (U+1F916), a filled `AI Generation Disclosure` section naming tool and model,
+  and a human who reviews every line. It also warns that fully AI-written descriptions "are more likely to
+  be closed outright". Our loop implements none of that formatting. **Do not add.**
+- **jenkinsci/jenkins — unknown.** No AI policy in the repo tree; Jenkins publishes one on its website.
+  Unread, so unproven either way. **Do not add.**
+- **CircuitVerse — prohibited.** `AGENTS.md`: "Never create a PR". Already excluded.
+- **processing/p5.js — restricted.** No fully AI-generated contributions; agents must converse first.
+
+Consequence: none of the high-merge repos held back earlier are usable, and that is the correct answer,
+not an obstacle. A merged PR that violates a published policy is worse than no PR.
+
 ## Consequence for the allow-list
 
 
