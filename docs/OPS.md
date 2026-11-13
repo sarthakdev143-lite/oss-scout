@@ -27,13 +27,14 @@ The 8x VPS is gone. The contributor loop now runs on GitHub Actions, free for th
 
 ## The ledger contract
 
-One line per submission, exactly 7+ fields:
+One line per submission: a list marker, six metadata fields, then the command:
 
 ```
 - <owner/repo> <PR-URL> <digest> <code+tests|docs-only> <issue-URL> <fixed_file> <verify_cmd>
 ```
 
-`verify_cmd` is everything from field 7 to end of line, so it may contain spaces.
+`verify_cmd` is everything from field 8 to end of line (field 1 is the leading `-`), so it may
+contain spaces.
 Lines in the older 8-field shape (ending in `main`/`master`) are recognised as legacy and are
 never executed or auto-closed.
 
