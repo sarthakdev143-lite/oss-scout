@@ -3,7 +3,9 @@
 #   - the named test PASSES with the fix, and
 #   - the same test FAILS when only the fixed file is reverted to the base branch.
 # Usage: verify-claim.sh <owner/repo> <pr-url> <test_path> <fixed_file> <base_branch>
-# Prints VERIFIED or NOT-VERIFIED with reasons. Never prints tokens.
+#
+# Exit codes: 0 verified | 1 claim did not reproduce | 2 arguments unreachable
+#             3 environment could not be built (pytest collection error: proves nothing about the fix)
 set -uo pipefail
 
 REPO="${1:-}"; PR_URL="${2:-}"; TEST_PATH="${3:-}"; FIXED_FILE="${4:-}"; BASE="${5:-}"
@@ -25,36 +27,55 @@ echo "head: $(git rev-parse --short HEAD) branch: $BRANCH"
 
 if [ ! -f "$TEST_PATH" ]; then echo "NOT-VERIFIED: test file $TEST_PATH does not exist on the branch"; exit 1; fi
 
-# Python is the supported case; other stacks are reported, not guessed.
 if [ -f requirements.txt ] || [ -f pyproject.toml ]; then
-  python3 -m venv .venv >/dev/null 2>&1 || { echo "NOT-VERIFIED: cannot create venv"; exit 2; }
+  python3 -m venv .venv >/dev/null 2>&1 || { echo "NOT-VERIFIED: cannot create venv"; exit 3; }
   .venv/bin/pip install -q --upgrade pip >/dev/null 2>&1
   .venv/bin/pip install -q pytest >/dev/null 2>&1
+
   if [ -f requirements.txt ]; then
-    # Lines that cannot resolve (e.g. a pin to a version absent from PyPI) are skipped, so a broken
-    # dependency manifest does not mask a real test result.
-    .venv/bin/pip install -q -r requirements.txt >/tmp/pip.log 2>&1 || \
-      grep -v -E '^(opencv|[a-zA-Z0-9_.-]+==[0-9]+\.[0-9]+\.[0-9]+$)' requirements.txt > /tmp/req.txt && \
-      .venv/bin/pip install -q -r /tmp/req.txt >/dev/null 2>&1
+    if .venv/bin/pip install -q -r requirements.txt >/tmp/pip1.log 2>&1; then
+      echo "deps: requirements.txt installed as pinned"
+    else
+      echo "deps: pinned install failed; retrying without pins"
+      # Strip only version specifiers, keep every package (a pin can point at a version that does
+      # not exist on the index; that must not hide a real test result).
+      grep -v -E '^\s*(#|$|-|git\+|https?:)' requirements.txt \
+        | sed -E 's/[[:space:]]*(==|>=|<=|~=|!=|>|<).*$//' \
+        | grep -v -E '^\s*$' | sort -u > /tmp/req_names.txt
+      if ! .venv/bin/pip install -q -r /tmp/req_names.txt >/tmp/pip2.log 2>&1; then
+        echo "deps: unpinned install also failed"
+        tail -5 /tmp/pip2.log 2>/dev/null
+        echo "NOT-VERIFIED: environment could not be built from requirements.txt"; exit 3
+      fi
+    fi
   fi
   PY=".venv/bin/python"
 elif [ -f package.json ]; then
-  echo "NOT-VERIFIED: node project; verification needs an explicit runner"; exit 2
+  echo "NOT-VERIFIED: node project; verification needs an explicit runner"; exit 3
 else
-  echo "NOT-VERIFIED: unrecognised project type"; exit 2
+  echo "NOT-VERIFIED: unrecognised project type"; exit 3
 fi
 
 echo "--- positive: test must pass with the fix ---"
 $PY -m pytest -q "$TEST_PATH" 2>&1 | tail -12
 POS=${PIPESTATUS[0]}
 
-echo "--- negative: same test with $FIXED_FILE reverted ---"
+if [ "$POS" -eq 2 ] || [ "$POS" -eq 3 ] || [ "$POS" -eq 4 ]; then
+  echo "NOT-VERIFIED: pytest could not run the test (exit $POS: collection/usage error, not a result)"
+  exit 3
+fi
+
+echo "--- negative: same test with $FIXED_FILE reverted to origin/$BASE ---"
 git fetch --quiet origin "$BASE" 2>/dev/null
 if ! git checkout "origin/$BASE" -- "$FIXED_FILE" 2>/dev/null; then
   echo "NOT-VERIFIED: cannot revert $FIXED_FILE from origin/$BASE"; exit 2
 fi
 $PY -m pytest -q "$TEST_PATH" 2>&1 | tail -12
 NEG=${PIPESTATUS[0]}
+
+if [ "$NEG" -eq 2 ] || [ "$NEG" -eq 3 ] || [ "$NEG" -eq 4 ]; then
+  echo "NOT-VERIFIED: pytest could not run the test after the revert (exit $NEG)"; exit 3
+fi
 
 if [ "$POS" -ne 0 ]; then echo "NOT-VERIFIED: test fails WITH the fix (exit $POS)"; exit 1; fi
 if [ "$NEG" -eq 0 ]; then echo "NOT-VERIFIED: test also passes WITHOUT the fix: it does not prove the defect"; exit 1; fi
