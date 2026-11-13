@@ -1,7 +1,7 @@
 name: verify-pr
 
 # Independent check of a claimed fix, using the SAME script the nightly harness runs:
-#   ops/verify-claim.sh  ->  exit 0 only if the test passes with the fix and fails without it.
+#   ops/verify-claim.sh -> exit 0 only if the command passes with the fix and fails without it.
 on:
   workflow_dispatch:
     inputs:
@@ -13,10 +13,6 @@ on:
         description: "Pull request URL"
         type: string
         required: true
-      test_path:
-        description: "Test file that proves the defect"
-        type: string
-        required: true
       fixed_file:
         description: "Source file the fix changed"
         type: string
@@ -24,25 +20,33 @@ on:
       base:
         description: "Base branch"
         type: string
-        default: "master"
+        default: "main"
+      verify_cmd:
+        description: "Exact command that proves the fix"
+        type: string
+        required: true
+      baseline:
+        description: "Also compare the full suite against base"
+        type: boolean
+        default: false
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - name: Verify the claim
         env:
           GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
-          REPO: ${{ inputs.repo }}
-          PR_URL: ${{ inputs.pr_url }}
-          TEST_PATH: ${{ inputs.test_path }}
-          FIXED_FILE: ${{ inputs.fixed_file }}
-          BASE: ${{ inputs.base }}
+          VERIFY_BASELINE: ${{ inputs.baseline && '1' || '0' }}
         run: |
           set -uo pipefail
-          bash ops/verify-claim.sh "$REPO" "$PR_URL" "$TEST_PATH" "$FIXED_FILE" "$BASE"
+          bash ops/verify-claim.sh "${{ inputs.repo }}" "${{ inputs.pr_url }}" \
+            "${{ inputs.fixed_file }}" "${{ inputs.base }}" "${{ inputs.verify_cmd }}"
