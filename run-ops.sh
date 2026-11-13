@@ -238,7 +238,13 @@ while true; do
         VERIFY_CMD=$(echo "$line" | awk '{for (i=7; i<=NF; i++) printf "%s%s", $i, (i<NF ? " " : "")}')
         PR_BASE=$(gh pr view "$PR_URL" --json baseRefName -q '.baseRefName' 2>/dev/null)
         VERIFIER="${VERIFIER_PATH:-$ROOT/ops/verify-claim.sh}"
-        if [ ! -f "$VERIFIER" ]; then
+        FIELD_COUNT=$(echo "$line" | awk '{print NF}')
+        LAST_FIELD=$(echo "$line" | awk '{print $NF}')
+        if [ "$FIELD_COUNT" -ge 8 ] && { [ "$LAST_FIELD" = "main" ] || [ "$LAST_FIELD" = "master" ]; }; then
+          # Old 8-field ledger line (test_path, fixed_file, base). Its fields 6-7 are not a command:
+          # verifying it would run nonsense. Left open, flagged, never auto-closed.
+          echo "claim: LEGACY-FORMAT (pre-verify_cmd ledger line; not re-run, PR left open for manual check)"
+        elif [ ! -f "$VERIFIER" ]; then
           echo "claim: VIOLATION (verifier not found at $VERIFIER; nothing was checked)"
           echo "action: treat every submission this cycle as unverified"
         elif [ -n "$FIXED_FILE_PATH" ] && [ -n "$VERIFY_CMD" ]; then
