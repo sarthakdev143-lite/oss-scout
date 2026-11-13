@@ -21,7 +21,7 @@ jobs:
       - name: bash -n every script
         run: |
           set -euo pipefail
-          for f in run-ops.sh .devcontainer/setup.sh .devcontainer/post-start.sh; do
+          for f in run-ops.sh .devcontainer/setup.sh .devcontainer/post-start.sh ops/verify-claim.sh; do
             echo "checking $f"
             bash -n "$f"
           done
@@ -30,7 +30,7 @@ jobs:
           set -euo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y -qq shellcheck
-          shellcheck -S warning -e SC1090,SC1091 run-ops.sh .devcontainer/setup.sh .devcontainer/post-start.sh
+          shellcheck -S warning -e SC1090,SC1091 run-ops.sh .devcontainer/setup.sh .devcontainer/post-start.sh ops/verify-claim.sh
       - name: devcontainer and config are valid JSON
         run: |
           set -euo pipefail
