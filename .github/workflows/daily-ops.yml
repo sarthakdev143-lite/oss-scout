@@ -122,6 +122,12 @@ jobs:
           export OSS_SCOUT_CONFIG="$HOME/.oss-scout/oss-scout.config.json"
           bun src/cli.ts doctor || echo "doctor reported an issue (continuing; the audit will catch real failures)"
 
+      - name: Stash the verifier outside the working tree
+        run: |
+          set -euo pipefail
+          cp ops/verify-claim.sh "$RUNNER_TEMP/verify-claim.sh"
+          chmod +x "$RUNNER_TEMP/verify-claim.sh"
+
       - name: Contributor window
         env:
           RUN_ONCE: "1"
@@ -129,10 +135,48 @@ jobs:
           RUN_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.run_minutes || '120' }}
           MAX_SUBMITS_PER_DAY: ${{ github.event_name == 'workflow_dispatch' && inputs.max_submits || '2' }}
           OSS_SCOUT_STATE_DIR: ${{ github.workspace }}/../.oss-scout
+          VERIFIER_PATH: ${{ runner.temp }}/verify-claim.sh
         run: |
           set -uo pipefail
           export OSS_SCOUT_STATE_DIR="$HOME/.oss-scout"
           bash run-ops.sh
+
+      - name: Assert the window did something
+        if: always()
+        run: |
+          set -uo pipefail
+          f="$HOME/.oss-scout/last-run.json"
+          if [ ! -f "$f" ]; then echo "::error::no run record written; the loop did not reach a window boundary"; exit 1; fi
+          cat "$f"
+          cycles=$(python3 -c "import json;print(json.load(open('$f'))['cycles'])")
+          quota=$(python3 -c "import json;print(json.load(open('$f'))['quota_met'])")
+          if [ "$cycles" -eq 0 ] && [ "$quota" -eq 0 ]; then
+            echo "::error::window ran zero cycles and did not stop for quota: this is the silent-no-op failure"
+            exit 1
+          fi
+          echo "window OK: cycles=$cycles quota_met=$quota"
+
+      - name: Summary
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+        run: |
+          set -uo pipefail
+          {
+            echo "## oss-scout daily summary ($(date -u +%F))"
+            echo
+            echo "**Today's ledger** (\`docs/daily/SUBMITTED-$(date -u +%F).md\`):"
+            echo '```'
+            cat "docs/daily/SUBMITTED-$(date -u +%F).md" 2>/dev/null | tail -5 || echo "(no submissions)"
+            echo '```'
+            echo
+            echo "**Recent PRs by this account** (open / merged / closed):"
+            echo '```'
+            gh pr list --author sarthakdev143-lite --state all --limit 25 \
+              --json repository,number,state,title,createdAt \
+              --template '{{range .}}{{.repository.name}}#{{.number}} {{.state}} {{.createdAt}} {{.title}}{{"\n"}}{{end}}' 2>/dev/null | head -25 || echo "(unavailable)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload logs
         if: always()

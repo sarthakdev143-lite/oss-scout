@@ -63,7 +63,7 @@ jobs:
       - name: Verify the model answers
         run: |
           set -euo pipefail
-          opencode run --model opencode-go/muse-spark-1.3-contributor "Reply with exactly: ok" | tail -2
+          opencode run --model "opencode-go/deepseek-v4.1-flash#max" "Reply with exactly: ok" | tail -2
 
       - name: One contribution
         env:
@@ -111,7 +111,7 @@ jobs:
           Never invent numbers. If a step fails, say so with the real output. Be concise.
           BRIEF
 
-          timeout --signal=TERM 100m opencode run --model opencode-go/muse-spark-1.3-contributor -f "$PROMPT" \
+          timeout --signal=TERM 100m opencode run --model "opencode-go/deepseek-v4.1-flash#max" -f "$PROMPT" \
             "Make the contribution described in the brief. Today is $(date -u +%F)." 2>&1 | tee /tmp/cycle.log
 
           {

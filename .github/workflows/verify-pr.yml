@@ -1,7 +1,7 @@
 name: verify-pr
 
-# Independent check of a claimed bug fix: does the new test fail without the fix and pass with it?
-# Manual only. Runs as a third party: same repo, clean environment, no agent involved.
+# Independent check of a claimed fix, using the SAME script the nightly harness runs:
+#   ops/verify-claim.sh -> exit 0 only if the command passes with the fix and fails without it.
 on:
   workflow_dispatch:
     inputs:
@@ -9,90 +9,44 @@ on:
         description: "owner/repo"
         type: string
         required: true
-      branch:
-        description: "PR head branch"
+      pr_url:
+        description: "Pull request URL"
+        type: string
+        required: true
+      fixed_file:
+        description: "Source file the fix changed"
         type: string
         required: true
       base:
         description: "Base branch"
         type: string
-        default: "master"
-      test_path:
-        description: "Test file that proves the defect"
+        default: "main"
+      verify_cmd:
+        description: "Exact command that proves the fix"
         type: string
         required: true
-      fixed_file:
-        description: "The file the fix touches (reverted to base for the negative check)"
-        type: string
-        required: true
-      python:
-        description: "Python version"
-        type: string
-        default: "3.12"
+      baseline:
+        description: "Also compare the full suite against base"
+        type: boolean
+        default: false
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
-      - name: Clone PR branch
-        env:
-          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
-          REPO: ${{ inputs.repo }}
-          BRANCH: ${{ inputs.branch }}
-        run: |
-          set -euo pipefail
-          git clone --quiet --branch "$BRANCH" "https://github.com/$REPO.git" work
-          cd work
-          echo "head: $(git rev-parse --short HEAD)"
-
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ inputs.python }}
-
-      - name: Install
-        working-directory: work
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Verify the claim
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+          VERIFY_BASELINE: ${{ inputs.baseline && '1' || '0' }}
         run: |
           set -uo pipefail
-          python -m venv .venv
-          .venv/bin/pip install -q --upgrade pip
-          .venv/bin/pip install -q pytest pydantic pydantic-settings sqlalchemy python-dotenv
-          if [ -f requirements.txt ]; then
-            # The project pins opencv-python-headless==4.14.0, which does not exist on PyPI.
-            # Drop only that line so the rest of the real dependency set installs.
-            grep -v -E '^\s*opencv-python-headless==' requirements.txt > /tmp/req.txt || cp requirements.txt /tmp/req.txt
-            .venv/bin/pip install -q -r /tmp/req.txt || echo "::warning::some requirements failed; continuing"
-            .venv/bin/pip install -q "opencv-python-headless>=4.10" || echo "::warning::opencv unavailable (import-only tests may still run)"
-          fi
-          .venv/bin/python -c "import sqlalchemy, pytest, pydantic_settings; print('deps ok')"
-
-      - name: Positive check (fix applied)
-        working-directory: work
-        run: |
-          set -uo pipefail
-          set +e
-          .venv/bin/python -m pytest -q "${{ inputs.test_path }}" 2>&1 | tail -15
-          echo "POSITIVE_EXIT=${PIPESTATUS[0]}" | tee /tmp/positive.txt
-          exit 0
-
-      - name: Negative check (fix reverted)
-        working-directory: work
-        run: |
-          set -uo pipefail
-          set +e
-          git fetch --quiet origin "${{ inputs.base }}"
-          git checkout "origin/${{ inputs.base }}" -- "${{ inputs.fixed_file }}"
-          echo "reverted: ${{ inputs.fixed_file }}"
-          .venv/bin/python -m pytest -q "${{ inputs.test_path }}" 2>&1 | tail -25
-          echo "NEGATIVE_EXIT=${PIPESTATUS[0]}" | tee /tmp/negative.txt
-          exit 0
-
-      - name: Verdict
-        run: |
-          set -uo pipefail
-          POS=$(grep -o '[0-9]*' /tmp/positive.txt | head -1)
-          NEG=$(grep -o '[0-9]*' /tmp/negative.txt | head -1)
-          echo "positive exit=$POS (must be 0), negative exit=$NEG (must be non-zero)"
-          if [ "$POS" -ne 0 ]; then echo "::error::the test does not pass with the fix applied"; exit 1; fi
-          if [ "$NEG" -eq 0 ]; then echo "::error::the test also passes without the fix: it does not prove the defect"; exit 1; fi
-          echo "VERDICT: the fix is load-bearing and the test proves the defect"
+          bash ops/verify-claim.sh "${{ inputs.repo }}" "${{ inputs.pr_url }}" \
+            "${{ inputs.fixed_file }}" "${{ inputs.base }}" "${{ inputs.verify_cmd }}"

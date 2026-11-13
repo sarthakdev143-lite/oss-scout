@@ -51,6 +51,7 @@ MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-2}
 RUN_MINUTES=${RUN_MINUTES:-120}   # 2h/day fits the Codespaces free quota; CI runs one window then exits
 RUN_ONCE=${RUN_ONCE:-0}           # 1 = exit when the window ends or the quota is met (GitHub Actions)
 FORCE_WINDOW=${FORCE_WINDOW:-0}   # 1 = treat process start as the window start
+MODEL="${MODEL:-opencode-go/deepseek-v4.1-flash#max}"
 
 # GitHub's scheduler is routinely late (observed: 6.5h). A wall-clock window would therefore be
 # already over when the job finally starts, so a single-run job always opens its own window.
@@ -60,7 +61,13 @@ fi
 LOG="docs/daily-24-7.log"
 mkdir -p docs/daily "$STATE_DIR"
 
-echo "[$(date -u +%FT%TZ)] ops boot root=$ROOT state=$STATE_DIR window ${START_HOUR_UTC}:00 UTC +${RUN_MINUTES}min max ${MAX_SUBMITS_PER_DAY}/day run_once=$RUN_ONCE: $(git rev-parse --short HEAD 2>/dev/null)" >> "$LOG"
+# Snapshot the brief BEFORE any branch switch: the daily branch can be older than main, and the
+# agent must always receive the current rules, not whatever a stale branch still contains.
+BRIEF_SNAPSHOT=$(mktemp)
+cat VPS.md VPS_PLAN.md > "$BRIEF_SNAPSHOT" 2>/dev/null || true
+trap 'rm -f "$BRIEF_SNAPSHOT"' EXIT
+
+echo "[$(date -u +%FT%TZ)] ops boot root=$ROOT state=$STATE_DIR model=$MODEL window ${START_HOUR_UTC}:00 UTC +${RUN_MINUTES}min max ${MAX_SUBMITS_PER_DAY}/day run_once=$RUN_ONCE: $(git rev-parse --short HEAD 2>/dev/null)" >> "$LOG"
 
 sleep_until_next_day() {
   NEXT_DAY=$(date -u -d "tomorrow" +%F)
@@ -73,9 +80,13 @@ sleep_until_next_day() {
 }
 
 # One window per process for CI; forever-loop for a long-lived host.
+CYCLES_RUN=0
+QUOTA_MET_FLAG=0
 window_done() {
+  printf '{"cycles":%d,"quota_met":%d,"today":"%s","ended":"%s"}\n' \
+    "$CYCLES_RUN" "$QUOTA_MET_FLAG" "$TODAY" "$(date -u +%FT%TZ)" > "$STATE_DIR/last-run.json" 2>/dev/null || true
   if [ "$RUN_ONCE" = "1" ]; then
-    echo "[$(date -u +%FT%TZ)] window complete, RUN_ONCE set: exiting 0" >> "$LOG"
+    echo "[$(date -u +%FT%TZ)] window complete, RUN_ONCE set: exiting 0 (cycles=$CYCLES_RUN quota_met=$QUOTA_MET_FLAG)" >> "$LOG"
     exit 0
   fi
   sleep_until_next_day
@@ -115,6 +126,7 @@ while true; do
   touch "$SUBMIT_FILE"
   SUBMITS=$(grep -c . "$SUBMIT_FILE" 2>/dev/null || true)
   if [ "${SUBMITS:-0}" -ge "$MAX_SUBMITS_PER_DAY" ]; then
+    QUOTA_MET_FLAG=1
     window_done
     continue
   fi
@@ -130,9 +142,10 @@ while true; do
     git checkout "$BRANCH" >> "$LOG" 2>&1
   fi
   echo "[$(date -u +%FT%TZ)] ops cycle start branch=$BRANCH submits=$SUBMITS" >> "$LOG"
+  CYCLES_RUN=$((CYCLES_RUN + 1))
 
   PROMPT_FILE=$(mktemp)
-  cat VPS.md VPS_PLAN.md > "$PROMPT_FILE"
+  cat "$BRIEF_SNAPSHOT" > "$PROMPT_FILE"
   {
     echo ""
     echo "Today is $TODAY. Repo root: $ROOT. Config: $STATE_DIR/oss-scout.config.json. Already submitted today: $SUBMITS (max $MAX_SUBMITS_PER_DAY). Branch $BRANCH is checked out."
@@ -143,11 +156,41 @@ while true; do
     echo "b) Docs-only PRs: max 1 per week across ALL orgs. The daily staple is code: bug fixes (failing test first) or small features."
     echo "c) Every code change must add or extend tests proving the fix; run the full relevant suite in the docker sandbox before and after."
     echo "d) First PR per org: keep it small and visibly follow that repo's CONTRIBUTING/PR template."
+    echo "SELECTION (the funnel was starving: ~380 unassigned labeled issues exist, cycles kept finding none)"
+    echo "s0) Read docs/ORG-FEASIBILITY.md first: it records each org's known gate (CLA, assignment, AI policy)."
+    echo "    Do not re-derive a gate already recorded there; cite it. Update that file when you find a new one."
+    echo "s1) Pool: per org, query UP TO 100 open unassigned issues carrying a target label (good first issue, help wanted,"
+    echo "    bug, confirmed, tests, documentation). Do not look only at the newest handful; build the pool, then choose."
+    echo "s2) Blockers are ONLY these, each provable from the issue page: assigned to someone; linked to an open PR; a"
+    echo "    commenter claimed it and a maintainer acknowledged or it shows a work-in-progress PR; stale with no maintainer"
+    echo "    activity in 180 days; the repo's AI policy prohibits AI contributions or is unclear-and-restrictive."
+    echo "    'Many people commented', 'looks contested', 'I am not sure' are NOT blockers. If none of the five blockers is"
+    echo "    provable, the issue is ELIGIBLE."
+    echo "s3) Rank eligible issues: prefer (a) small blast radius, (b) reproducible defect over feature, (c) file count the"
+    echo "    repo's tests can cover, (d) maintainer-filed. Take the top one."
+    echo "s4) Report: in docs/daily/$TODAY.md write the pool size per org and, for the top 3 candidates, the exact blocker"
+    echo "    or the reason each was not chosen. A cycle may end with zero submissions ONLY when the pool was empty or every"
+    echo "    candidate had a provable blocker from s2; state it in those words."
+    echo "SCOPE (violations here are worse than submitting nothing):"
+    echo "k1) Modify ONLY source, test and docs files that the chosen issue is about. Never create or edit agent"
+    echo "    tooling or config in a target repo: no .claude/, .cursor/, .github/, AGENTS.md, CLAUDE.md, skills/,"
+    echo "    pipeline scripts, or dotfiles. If you catch yourself building tooling inside the target repo, stop:"
+    echo "    that is out of scope and must be reverted."
+    echo "k2) Never force-push (no --force, no --force-with-lease). Never rewrite pushed history. Never open a branch"
+    echo "    that is not needed for the one PR."
+    echo "k3) Never work in a scratch directory belonging to an earlier cycle. Clone fresh under /tmp/<repo>-<date>."
+    echo "k4) If the honest answer is that the issue is not fixable within these limits, submit nothing and say why."
     echo "1. Work only repos under repos.allow in $STATE_DIR/oss-scout.config.json. Never touch main directly."
     echo "2. Do the pipeline YOURSELF (the local scheduler has no LLM host, so ticks alone never start work; you are the worker): (a) check caps via status + today's SUBMITTED file, stop if quota met; (b) rotation: pick the next allow-listed org with no submission in the last 2 days; (c) run one scheduler tick for follow-ups only; (d) find ONE maintainer-filed issue with target labels via gh (verify labels, recent maintainer activity, CI, AI policy); none eligible = log the reason in docs/daily/$TODAY.md and end the cycle with zero submissions; (e) implement in a clean /tmp workspace + docker sandbox (baseline first, failing test first for bugs, minimal diff); (f) verify gate + critic self-review at 0.85 + strict security pass; one issue per cycle max."
     echo "3. Submit a PR ONLY if ALL hold: verification gate passes, critic approves, strict security review passes, repo AI policy is clear, disclosure line present, diff within limits, caps allow it."
-    echo "4. Submit with gh using the write token only: fork, push the exact reviewed commit, open PR with disclosure. Any doubt = skip, record reason in docs/daily/$TODAY.md."
-    echo "5. Append one line per submitted PR to docs/daily/SUBMITTED-$TODAY.md: '- <repo> <PR-URL> <digest> <code+tests|docs-only> <maintainer-issue-URL>'. No line without a real maintainer-issue URL."
+    echo "4. Submit with gh using the write token only: fork, push the exact reviewed commit, open PR with disclosure. A candidate is skipped ONLY for a provable blocker from s2 or a mandatory upstream gate (CLA, assignment, AI policy); record which one."
+    echo "5. Append one line per submitted PR to docs/daily/SUBMITTED-$TODAY.md, exactly these 7 fields:"
+    echo "   '- <owner/repo> <PR-URL> <digest> <code+tests|docs-only> <maintainer-issue-URL> <fixed_file> <verify_cmd>'"
+    echo "   fixed_file = the source file your fix changed. verify_cmd = the exact command that proves the fix in a"
+    echo "   fresh clone (e.g. 'pytest tests/test_x.py -q', 'mvn -B -Dtest=FooTest test', 'npm test -- src/x.test.ts')."
+    echo "   Everything after field 6 is the command, spaces included. Omit them and the submission is recorded unverified."
+    echo "   Never write a test result you did not obtain by running that exact command: the harness re-runs it, and a"
+    echo "   mismatch closes the PR automatically."
     echo "6. Stop after $MAX_SUBMITS_PER_DAY submissions. Update docs/daily/$TODAY.md with what ran, skipped, and why."
     echo "7. Rotate orgs across days: do not submit twice to the same org on consecutive days unless a maintainer asked for a follow-up."
     echo "8. Every cycle, check your previously submitted OPEN PRs for maintainer comments; address actionable feedback within 24h by updating the PR. Responsiveness is part of the quality bar."
@@ -165,7 +208,7 @@ while true; do
   MSG="Today is $TODAY. Run one autonomous contributor cycle under the autonomy rules."
   # Bound one cycle: a hung agent must not hold the job until the 6h runner limit.
   timeout --signal=TERM "${CYCLE_TIMEOUT_MIN:-45}m" \
-    opencode run --model opencode-go/muse-spark-1.3-contributor -f "$PROMPT_FILE" "$MSG" >> "$LOG" 2>&1
+    opencode run --model "$MODEL" -f "$PROMPT_FILE" "$MSG" >> "$LOG" 2>&1
   rm -f "$PROMPT_FILE"
   echo "[$(date -u +%FT%TZ)] ops cycle exit=$? daily-push" >> "$LOG"
 
@@ -188,7 +231,12 @@ while true; do
         esac
         FILES=$(gh pr view "$PR_URL" --json files -q '[.files[].path] | join(" ")' 2>/dev/null || true)
         echo "files: $FILES"
-        if echo "$FILES" | grep -Eq '(^| )(.*/)?tests?/[^ ]*|[^ ]*[_-]test\.[^ ]*|[^ ]*\.test\.[^ ]*'; then
+        if echo "$FILES" | grep -Eq '(^| )(\.claude/|\.cursor/|\.github/|skills/|AGENTS\.md|CLAUDE\.md)'; then
+          echo "scope: VIOLATION (touches agent tooling/config instead of the issue's code)"
+        else
+          echo "scope: OK"
+        fi
+        if echo "$FILES" | grep -Eq '(^| )(.*/)?tests?/[^ ]*|(^| )test_[^ ]*\.py|(^| )[^ ]*[_-]test\.[^ ]*|(^| )[^ ]*\.(test|spec)\.[^ ]*'; then
           echo "tests: OK (test files touched)"
         else
           echo "tests: NONE (no test files in diff)"
@@ -212,6 +260,40 @@ while true; do
             echo "docs-quota: OK"
           fi
         fi
+        # Independent re-run of the claimed command. Runs here, by the harness, not the agent.
+        REPO_SLUG=$(echo "$line" | awk '{print $2}')
+        FIXED_FILE_PATH=$(echo "$line" | awk '{print $6}')
+        VERIFY_CMD=$(echo "$line" | awk '{for (i=7; i<=NF; i++) printf "%s%s", $i, (i<NF ? " " : "")}')
+        PR_BASE=$(gh pr view "$PR_URL" --json baseRefName -q '.baseRefName' 2>/dev/null)
+        VERIFIER="${VERIFIER_PATH:-$ROOT/ops/verify-claim.sh}"
+        FIELD_COUNT=$(echo "$line" | awk '{print NF}')
+        LAST_FIELD=$(echo "$line" | awk '{print $NF}')
+        if [ "$FIELD_COUNT" -ge 8 ] && { [ "$LAST_FIELD" = "main" ] || [ "$LAST_FIELD" = "master" ]; }; then
+          # Old 8-field ledger line (test_path, fixed_file, base). Its fields 6-7 are not a command:
+          # verifying it would run nonsense. Left open, flagged, never auto-closed.
+          echo "claim: LEGACY-FORMAT (pre-verify_cmd ledger line; not re-run, PR left open for manual check)"
+        elif [ ! -f "$VERIFIER" ]; then
+          echo "claim: VIOLATION (verifier not found at $VERIFIER; nothing was checked)"
+          echo "action: treat every submission this cycle as unverified"
+        elif [ -n "$FIXED_FILE_PATH" ] && [ -n "$VERIFY_CMD" ]; then
+          VERIFY_OUT=$(bash "$VERIFIER" "$REPO_SLUG" "$PR_URL" "$FIXED_FILE_PATH" "${PR_BASE:-master}" "$VERIFY_CMD" 2>&1)
+          VERIFY_RC=$?
+          echo "claim-check:"
+          echo "$VERIFY_OUT" | tail -25
+          if [ "$VERIFY_RC" -eq 0 ]; then
+            echo "claim: VERIFIED (test passes with the fix, fails without it)"
+          elif [ "$VERIFY_RC" -eq 1 ]; then
+            echo "claim: VIOLATION (the test claim did not reproduce on a clean checkout)"
+            gh pr close "$PR_URL" --comment "Automated verification could not reproduce this change's test evidence on a clean checkout, so it is being closed rather than left for maintainers to review. The claim, as written, did not hold." >/dev/null 2>&1 || true
+            echo "action: PR closed pending a reproducible fix"
+          else
+            # Our tooling could not run the stack (Java, Node, missing manifest). That is not
+            # evidence against the PR: never close on it, and do not call it verified either.
+            echo "claim: UNVERIFIED-ENV (verifier could not run this stack; PR left open, needs a manual re-run)"
+          fi
+        else
+          echo "claim: VIOLATION (no fixed_file/verify_cmd recorded, so nothing could be re-run)"
+        fi
       } >> docs/daily/AUDIT-"$TODAY".md
     done < "$SUBMIT_FILE"
     if grep -q "VIOLATION" docs/daily/AUDIT-"$TODAY".md 2>/dev/null; then
@@ -220,8 +302,18 @@ while true; do
     fi
   fi
 
+  # The agent may have left the checkout on another branch or in a detached state; the daily log
+  # commit must land on the daily branch, not wherever the session ended up.
+  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "detached")
+  if [ "$CURRENT_BRANCH" != "$BRANCH" ]; then
+    echo "[$(date -u +%FT%TZ)] checkout was on '$CURRENT_BRANCH', returning to $BRANCH" >> "$LOG"
+    git stash push -u -m "ops-autosave-$TODAY" >> "$LOG" 2>&1 || true
+    git checkout "$BRANCH" >> "$LOG" 2>&1 || git checkout -b "$BRANCH" >> "$LOG" 2>&1 || true
+    git stash pop >> "$LOG" 2>&1 || true
+  fi
+
   git add docs/daily/"$TODAY".md docs/daily/SUBMITTED-"$TODAY".md docs/daily/AUDIT-"$TODAY".md docs/daily/VIOLATION-"$TODAY".md VPS_PLAN.md 2>/dev/null || true
   git diff --cached --quiet || git commit -qm "ops: $TODAY cycle"
-  git push -u origin "$BRANCH" >> "$LOG" 2>&1 || true
+  git push -u origin "$BRANCH" >> "$LOG" 2>&1 || echo "[$(date -u +%FT%TZ)] WARNING daily push failed" >> "$LOG"
   sleep 120
 done

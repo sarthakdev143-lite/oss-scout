@@ -1,0 +1,37 @@
+name: repo-scout
+
+# Ranks candidate repos by the only metric that matters for both volume and reputation:
+# how often OUTSIDE contributors' PRs actually get merged. Volume follows merge rate, not effort.
+# Logic lives in ops/repo-scout.py so it can be tested and read as code, not YAML.
+on:
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: "space-separated owner/repo list (blank = built-in candidate set)"
+        type: string
+        default: ""
+      since_days:
+        description: "look-back window"
+        type: string
+        default: "90"
+
+permissions:
+  contents: read
+
+jobs:
+  rank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rank repos
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+          REPOS: ${{ inputs.repos }}
+          SINCE_DAYS: ${{ inputs.since_days }}
+        run: |
+          set -uo pipefail
+          python3 ops/repo-scout.py --repos "$REPOS" --since-days "$SINCE_DAYS" --summary "$GITHUB_STEP_SUMMARY"

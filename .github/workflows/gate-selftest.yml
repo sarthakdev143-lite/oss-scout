@@ -1,0 +1,60 @@
+name: gate-selftest
+
+# The verifier is the one component whose bugs cannot be caught by trusting it. These two jobs
+# pin its behaviour against known cases, so an edit that makes it silently lenient fails here.
+#   known_good: a fix that genuinely works must be VERIFIED.
+#   known_bad : a command that passes with and without the fix must be rejected.
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # Mondays; catches rot in the verifier or in the repos it depends on
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  known_good:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: A real fix must verify
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+        run: |
+          set -uo pipefail
+          rc=0
+          bash ops/verify-claim.sh \
+            "sarthakdev143-lite/doomscroller" \
+            "https://github.com/sarthakdev143-lite/doomscroller/pull/17" \
+            "requirements.txt" "master" \
+            "python -m pip install -r requirements.txt && python -c 'import cv2'" || rc=$?
+          if [ "$rc" -ne 0 ]; then echo "::error::gate rejected a known-good fix (exit $rc)"; exit 1; fi
+          echo "SELFTEST known_good OK"
+
+  known_bad:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: A command that proves nothing must be rejected
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+        run: |
+          set -uo pipefail
+          # `true` succeeds with and without the fix, so the negative check must fail the gate.
+          rc=0
+          bash ops/verify-claim.sh \
+            "sarthakdev143-lite/doomscroller" \
+            "https://github.com/sarthakdev143-lite/doomscroller/pull/17" \
+            "requirements.txt" "master" "true" || rc=$?
+          if [ "$rc" -ne 1 ]; then echo "::error::gate did not reject an unprovable claim (exit $rc, wanted 1)"; exit 1; fi
+          echo "SELFTEST known_bad OK"
