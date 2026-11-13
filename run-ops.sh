@@ -151,6 +151,8 @@ while true; do
     echo "c) Every code change must add or extend tests proving the fix; run the full relevant suite in the docker sandbox before and after."
     echo "d) First PR per org: keep it small and visibly follow that repo's CONTRIBUTING/PR template."
     echo "SELECTION (the funnel was starving: ~380 unassigned labeled issues exist, cycles kept finding none)"
+    echo "s0) Read docs/ORG-FEASIBILITY.md first: it records each org's known gate (CLA, assignment, AI policy)."
+    echo "    Do not re-derive a gate already recorded there; cite it. Update that file when you find a new one."
     echo "s1) Pool: per org, query UP TO 100 open unassigned issues carrying a target label (good first issue, help wanted,"
     echo "    bug, confirmed, tests, documentation). Do not look only at the newest handful; build the pool, then choose."
     echo "s2) Blockers are ONLY these, each provable from the issue page: assigned to someone; linked to an open PR; a"
