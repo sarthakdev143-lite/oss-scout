@@ -221,8 +221,13 @@ while true; do
       TAG=$(echo "$line" | awk '{print $5}')
       ISSUE_URL=$(echo "$line" | awk '{print $6}')
       case "$PR_URL" in http*) ;; *) continue;; esac
-      grep -qF "$PR_URL" docs/daily/AUDIT-"$TODAY".md 2>/dev/null && continue
+      # Re-audit when the ledger line itself changes (format migration, edited claim), not just
+      # on first sight: otherwise a stale verdict sits in the file contradicting reality.
+      if grep -qxF "ledger: $line" docs/daily/AUDIT-"$TODAY".md 2>/dev/null; then continue; fi
+      if grep -qF "$PR_URL" docs/daily/AUDIT-"$TODAY".md 2>/dev/null && \
+         grep -qF "ledger: $line" docs/daily/AUDIT-"$TODAY".md 2>/dev/null; then continue; fi
       {
+        echo "ledger: $line"
         echo "## audit $PR_URL"
         BODY=$(gh pr view "$PR_URL" --json body -q '.body' 2>/dev/null || true)
         case "$BODY" in
