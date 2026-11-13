@@ -13,23 +13,15 @@
   },
   "repos": {
     "allow": [
-      "OWASP/*",
-      "zulip/*",
-      "oppia/*",
-      "jenkinsci/*",
-      "RocketChat/*",
-      "processing/*",
-      "wagtail/*",
-      "openmrs/*",
-      "django/*",
-      "CircuitVerse/*",
-      "publiclab/*",
-      "sugarlabs/*",
-      "LibreHealth/*",
-      "OpenRefine/*",
-      "scikit-learn/*",
-      "pandas-dev/*",
-      "laurent22/joplin"
+      "OWASP/OWASP-Hunting",
+      "OWASP/wstg",
+      "OWASP/owasp-mastg",
+      "OpenRefine/OpenRefine",
+      "laurent22/joplin",
+      "astropy/astropy",
+      "freeCodeCamp/freeCodeCamp",
+      "sugarlabs/musicblocks-v4",
+      "wagtail/wagtail.org"
     ],
     "deny": []
   },

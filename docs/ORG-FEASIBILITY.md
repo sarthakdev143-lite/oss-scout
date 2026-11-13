@@ -3,6 +3,59 @@
 Every row comes from a cycle that actually inspected the org. Update it when evidence changes;
 do not re-derive from scratch each cycle.
 
+## Merge-rate ranking (repo-scout, 2026-11-13, 90-day window)
+
+Outside contributors only. `outside` = PRs from NONE/CONTRIBUTOR/FIRST_TIME in window.
+This is the primary selection signal: volume follows merge rate, not effort.
+
+| repo | outside | merged | rate | gfi | hw | bug | verdict |
+|---|---|---|---|---|---|---|---|
+| beeware/briefcase | 79 | 66 | 84% | 4 | 0 | 42 | STRONG (AI policy mentions) |
+| OWASP/OWASP-Hunting | 20 | 13 | 65% | 2 | 0 | 7 | **USABLE — active work** |
+| jenkinsci/git-plugin | 17 | 11 | 65% | 1 | 0 | 0 | thin supply |
+| OWASP/wstg | 54 | 34 | 63% | 0 | 2 | 0 | **USABLE — active work** |
+| processing/p5.js | 79 | 41 | 52% | 8 | 40 | 106 | AI policy restricts |
+| jenkinsci/jenkins | 70 | 36 | 51% | 13 | 0 | 2 | Jenkins AI policy to read |
+| astropy/astropy | 54 | 27 | 50% | 0 | 0 | 321 | **USABLE — active work** |
+| wagtail/wagtail.org | 6 | 3 | 50% | 0 | 1 | 12 | small sample |
+| openmrs/...webservices.rest | 14 | 7 | 50% | 0 | 0 | 0 | no supply |
+| OpenRefine/OpenRefine | 71 | 34 | 48% | 5 | 19 | 0 | **USABLE — active work** |
+| sugarlabs/musicblocks-v4 | 96 | 42 | 44% | 22 | 16 | 0 | **USABLE — needs assignment** |
+| freeCodeCamp/freeCodeCamp | 41 | 18 | 44% | 0 | 8 | 0 | **USABLE — active work** |
+| sympy/sympy | 64 | 27 | 42% | 2 | 0 | 446 | AI policy mentions |
+| laurent22/joplin | 80 | 29 | 36% | 0 | 0 | 475 | **USABLE — active work** |
+| numpy/numpy | 40 | 14 | 35% | 0 | 0 | 0 | weak |
+| wagtail/wagtail | 55 | 18 | 33% | 1 | 0 | 0 | weak |
+| scipy/scipy | 69 | 19 | 28% | 3 | 0 | 0 | weak |
+| pandas-dev/pandas | 33 | 8 | 24% | 0 | 0 | 697 | weak |
+| networkx/networkx | 74 | 17 | 23% | 0 | 0 | 0 | weak |
+| zulip/zulip | 28 | 6 | 21% | 0 | 79 | 192 | weak |
+| scikit-learn/scikit-learn | 51 | 10 | 20% | 0 | 170 | 267 | weak |
+| django/django | 63 | 12 | 19% | 0 | 0 | 0 | weak |
+| OWASP/SecurityShepherd | 24 | 4 | 17% | 12 | 2 | 25 | weak (one PR already open) |
+| RocketChat/Rocket.Chat | 29 | 5 | 17% | 7 | 0 | 0 | weak |
+| processing/p5.js-web-editor | 65 | 10 | 15% | 7 | 38 | 127 | weak + AI policy |
+| openmrs/openmrs-core | 64 | 9 | 14% | 0 | 0 | 0 | weak |
+| oppia/oppia | 82 | 7 | 9% | 55 | 0 | 1012 | **avoid: 9% despite huge supply** |
+| CircuitVerse/CircuitVerse | 99 | 3 | 3% | 31 | 7 | 0 | avoid (AI prohibited) |
+| jenkinsci/credentials-plugin | 20 | 0 | 0% | 1 | 0 | 0 | avoid |
+| publiclab/plots2 | 4 | 0 | 0% | 1 | 138 | 141 | dormant |
+
+## Consequence for the allow-list
+
+Active set = repos with a real merge rate and actual labeled supply, excluding known
+AI/CLA/assignment gates: OWASP/OWASP-Hunting, OWASP/wstg, OWASP/owasp-mastg,
+OpenRefine, joplin, astropy, freeCodeCamp, sugarlabs/musicblocks-v4, wagtail/wagtail.org.
+
+Dropped on evidence, not on taste: oppia (9%), CircuitVerse (3%, AI prohibited), django (19%),
+scikit-learn (20%), pandas (24%), zulip (21%), RocketChat (17%), openmrs-core (14%),
+publiclab (dormant), numpy/scipy/networkx (weak, no labeled supply).
+
+Held pending a human read of their AI policy: beeware (84% merge — very attractive),
+jenkinsci (51%), sympy (42%), p5.js (52%). None of these should receive a PR until the policy
+wording is read and accepted.
+
+
 | Org | Gate | Evidence | Status |
 |---|---|---|---|
 | OWASP | none found | PR #98 verified end to end (fix + failing test) | **WORKS** |
