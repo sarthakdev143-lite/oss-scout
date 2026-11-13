@@ -7,8 +7,22 @@
     "writeTokenEnv": "OSS_SCOUT_WRITE_TOKEN"
   },
   "interests": {
-    "languages": ["TypeScript", "JavaScript", "Python", "Java"],
-    "topics": ["react", "nextjs", "fastapi", "spring-boot", "mongodb", "llm", "security", "developer-tools"],
+    "languages": [
+      "TypeScript",
+      "JavaScript",
+      "Python",
+      "Java"
+    ],
+    "topics": [
+      "react",
+      "nextjs",
+      "fastapi",
+      "spring-boot",
+      "mongodb",
+      "llm",
+      "security",
+      "developer-tools"
+    ],
     "keywords": []
   },
   "repos": {
@@ -22,16 +36,17 @@
       "freeCodeCamp/freeCodeCamp",
       "sugarlabs/musicblocks-v4",
       "wagtail/wagtail.org",
+      "xerial/sqlite-jdbc",
       "neomjs/neo",
       "homarr-labs/homarr",
-      "layer5io/layer5",
-      "xerial/sqlite-jdbc",
+      "ahmadrosid/nakama",
+      "GoDiao/dreamcoder",
       "apache/amoro",
+      "meshery/meshery.io",
       "all-contributors/app",
-      "lingdojo/kana-dojo",
-      "suitenumerique/docs",
-      "Apicurio/apicurio-registry",
-      "CrossGL/crosstl"
+      "layer5io/layer5",
+      "CatVinci-Studio/Textus",
+      "soxoj/maigret"
     ],
     "deny": []
   },
@@ -62,8 +77,14 @@
     "cpus": "2"
   },
   "budget": {
-    "perTask": { "maxTokens": 600000, "maxCostUsd": 5 },
-    "perDay": { "maxTokens": 10000000, "maxCostUsd": 70 }
+    "perTask": {
+      "maxTokens": 600000,
+      "maxCostUsd": 5
+    },
+    "perDay": {
+      "maxTokens": 10000000,
+      "maxCostUsd": 70
+    }
   },
   "disclosure": {
     "line": "Prepared with AI assistance; reviewed and tested by me."
