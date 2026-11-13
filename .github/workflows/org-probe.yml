@@ -1,0 +1,54 @@
+name: org-probe
+
+# Mechanical feasibility scan: for each candidate repo, does it gate contributions behind a CLA,
+# an assignment process, or an AI policy that rules out agent-authored work? Plus live issue supply.
+on:
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: "space-separated owner/repo list (blank = built-in shortlist)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Scan
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+          EXTRA: ${{ inputs.repos }}
+        run: |
+          set -uo pipefail
+          DEFAULT="numpy/numpy scipy/scipy sympy/sympy matplotlib/matplotlib pandas-dev/pandas OpenRefine/OpenRefine beeware/briefcase laurent22/joplin freeCodeCamp/freeCodeCamp networkx/networkx scikit-learn/scikit-learn astropy/astropy"
+          LIST="${EXTRA:-$DEFAULT}"
+          {
+            echo "| repo | stars | pushed | CLA/DCO | AI policy | unassigned labeled |"
+            echo "|---|---|---|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for r in $LIST; do
+            meta=$(gh api "repos/$r" --jq '"\(.stargazers_count)|\(.pushed_at[0:10])"' 2>/dev/null) || meta="?|?"
+            stars=${meta%%|*}; pushed=${meta##*|}
+
+            cla="none"
+            for p in CLA.md docs/CLA.md .github/CLA.md CONTRIBUTING.md .github/CONTRIBUTING.md .github/PULL_REQUEST_TEMPLATE.md; do
+              txt=$(gh api "repos/$r/contents/$p" --jq '.content' 2>/dev/null | tr -d '\n' | base64 -d 2>/dev/null) || continue
+              if printf '%s' "$txt" | grep -qiE 'contributor license agreement|cla-assistant|easycla|\bCLA\b'; then cla="CLA ($p)"; break; fi
+              if printf '%s' "$txt" | grep -qiE 'developer certificate of origin|DCO|sign-off'; then cla="DCO ($p)"; fi
+            done
+
+            ai="none"
+            for p in AGENTS.md CLAUDE.md AI_POLICY.md docs/AI_POLICY.md .github/copilot-instructions.md .github/CONTRIBUTING.md CONTRIBUTING.md; do
+              txt=$(gh api "repos/$r/contents/$p" --jq '.content' 2>/dev/null | tr -d '\n' | base64 -d 2>/dev/null) || continue
+              if printf '%s' "$txt" | grep -qiE 'AI-generated|LLM-generated|generative AI|AI-assisted|AI contributions'; then ai="mentions ($p)"; break; fi
+            done
+
+            supply=$(gh search issues --repo "$r" --state open --label "good first issue" --limit 100 --json number 2>/dev/null | python3 -c 'import json,sys;d=json.load(sys.stdin);print(len(d))' 2>/dev/null) || supply="?"
+            echo "| $r | $stars | $pushed | $cla | $ai | $supply |" >> "$GITHUB_STEP_SUMMARY"
+            echo "$r stars=$stars pushed=$pushed cla=$cla ai=$ai gfi=$supply"
+          done
