@@ -163,6 +163,15 @@ while true; do
     echo "s4) Report: in docs/daily/$TODAY.md write the pool size per org and, for the top 3 candidates, the exact blocker"
     echo "    or the reason each was not chosen. A cycle may end with zero submissions ONLY when the pool was empty or every"
     echo "    candidate had a provable blocker from s2; state it in those words."
+    echo "SCOPE (violations here are worse than submitting nothing):"
+    echo "k1) Modify ONLY source, test and docs files that the chosen issue is about. Never create or edit agent"
+    echo "    tooling or config in a target repo: no .claude/, .cursor/, .github/, AGENTS.md, CLAUDE.md, skills/,"
+    echo "    pipeline scripts, or dotfiles. If you catch yourself building tooling inside the target repo, stop:"
+    echo "    that is out of scope and must be reverted."
+    echo "k2) Never force-push (no --force, no --force-with-lease). Never rewrite pushed history. Never open a branch"
+    echo "    that is not needed for the one PR."
+    echo "k3) Never work in a scratch directory belonging to an earlier cycle. Clone fresh under /tmp/<repo>-<date>."
+    echo "k4) If the honest answer is that the issue is not fixable within these limits, submit nothing and say why."
     echo "1. Work only repos under repos.allow in $STATE_DIR/oss-scout.config.json. Never touch main directly."
     echo "2. Do the pipeline YOURSELF (the local scheduler has no LLM host, so ticks alone never start work; you are the worker): (a) check caps via status + today's SUBMITTED file, stop if quota met; (b) rotation: pick the next allow-listed org with no submission in the last 2 days; (c) run one scheduler tick for follow-ups only; (d) find ONE maintainer-filed issue with target labels via gh (verify labels, recent maintainer activity, CI, AI policy); none eligible = log the reason in docs/daily/$TODAY.md and end the cycle with zero submissions; (e) implement in a clean /tmp workspace + docker sandbox (baseline first, failing test first for bugs, minimal diff); (f) verify gate + critic self-review at 0.85 + strict security pass; one issue per cycle max."
     echo "3. Submit a PR ONLY if ALL hold: verification gate passes, critic approves, strict security review passes, repo AI policy is clear, disclosure line present, diff within limits, caps allow it."
@@ -214,6 +223,11 @@ while true; do
         esac
         FILES=$(gh pr view "$PR_URL" --json files -q '[.files[].path] | join(" ")' 2>/dev/null || true)
         echo "files: $FILES"
+        if echo "$FILES" | grep -Eq '(^| )(\.claude/|\.cursor/|\.github/|skills/|AGENTS\.md|CLAUDE\.md)'; then
+          echo "scope: VIOLATION (touches agent tooling/config instead of the issue's code)"
+        else
+          echo "scope: OK"
+        fi
         if echo "$FILES" | grep -Eq '(^| )(.*/)?tests?/[^ ]*|(^| )test_[^ ]*\.py|(^| )[^ ]*[_-]test\.[^ ]*|(^| )[^ ]*\.(test|spec)\.[^ ]*'; then
           echo "tests: OK (test files touched)"
         else
@@ -280,8 +294,18 @@ while true; do
     fi
   fi
 
+  # The agent may have left the checkout on another branch or in a detached state; the daily log
+  # commit must land on the daily branch, not wherever the session ended up.
+  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "detached")
+  if [ "$CURRENT_BRANCH" != "$BRANCH" ]; then
+    echo "[$(date -u +%FT%TZ)] checkout was on '$CURRENT_BRANCH', returning to $BRANCH" >> "$LOG"
+    git stash push -u -m "ops-autosave-$TODAY" >> "$LOG" 2>&1 || true
+    git checkout "$BRANCH" >> "$LOG" 2>&1 || git checkout -b "$BRANCH" >> "$LOG" 2>&1 || true
+    git stash pop >> "$LOG" 2>&1 || true
+  fi
+
   git add docs/daily/"$TODAY".md docs/daily/SUBMITTED-"$TODAY".md docs/daily/AUDIT-"$TODAY".md docs/daily/VIOLATION-"$TODAY".md VPS_PLAN.md 2>/dev/null || true
   git diff --cached --quiet || git commit -qm "ops: $TODAY cycle"
-  git push -u origin "$BRANCH" >> "$LOG" 2>&1 || true
+  git push -u origin "$BRANCH" >> "$LOG" 2>&1 || echo "[$(date -u +%FT%TZ)] WARNING daily push failed" >> "$LOG"
   sleep 120
 done
