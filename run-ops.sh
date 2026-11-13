@@ -207,7 +207,7 @@ while true; do
         esac
         FILES=$(gh pr view "$PR_URL" --json files -q '[.files[].path] | join(" ")' 2>/dev/null || true)
         echo "files: $FILES"
-        if echo "$FILES" | grep -Eq '(^| )(.*/)?tests?/[^ ]*|[^ ]*[_-]test\.[^ ]*|[^ ]*\.test\.[^ ]*'; then
+        if echo "$FILES" | grep -Eq '(^| )(.*/)?tests?/[^ ]*|(^| )test_[^ ]*\.py|(^| )[^ ]*[_-]test\.[^ ]*|(^| )[^ ]*\.(test|spec)\.[^ ]*'; then
           echo "tests: OK (test files touched)"
         else
           echo "tests: NONE (no test files in diff)"
@@ -236,13 +236,16 @@ while true; do
         TEST_PATH=$(echo "$line" | awk '{print $7}')
         FIXED_FILE_PATH=$(echo "$line" | awk '{print $8}')
         PR_BASE=$(gh pr view "$PR_URL" --json baseRefName -q '.baseRefName' 2>/dev/null)
-        if [ -n "$TEST_PATH" ] && [ -n "$FIXED_FILE_PATH" ]; then
-          VERIFY_OUT=$(bash "$ROOT/ops/verify-claim.sh" "$REPO_SLUG" "$PR_URL" "$TEST_PATH" "$FIXED_FILE_PATH" "${PR_BASE:-master}" 2>&1 | tail -25)
+        VERIFIER="${VERIFIER_PATH:-$ROOT/ops/verify-claim.sh}"
+        if [ ! -f "$VERIFIER" ]; then
+          echo "claim: VIOLATION (verifier not found at $VERIFIER; nothing was checked)"
+        elif [ -n "$TEST_PATH" ] && [ -n "$FIXED_FILE_PATH" ]; then
+          VERIFY_OUT=$(bash "$VERIFIER" "$REPO_SLUG" "$PR_URL" "$TEST_PATH" "$FIXED_FILE_PATH" "${PR_BASE:-master}" 2>&1)
           VERIFY_RC=$?
           echo "claim-check:"
-          echo "$VERIFY_OUT"
+          echo "$VERIFY_OUT" | tail -25
           if [ "$VERIFY_RC" -ne 0 ]; then
-            echo "claim: VIOLATION (test claim did not reproduce; see above)"
+            echo "claim: VIOLATION (test claim did not reproduce; verifier exit $VERIFY_RC)"
             gh pr close "$PR_URL" --comment "Automated verification could not reproduce this change's test evidence on a clean checkout, so it is being closed rather than left for maintainers to review. The claim, as written, did not hold." >/dev/null 2>&1 || true
             echo "action: PR closed pending a reproducible fix"
           else

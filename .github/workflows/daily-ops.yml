@@ -122,6 +122,12 @@ jobs:
           export OSS_SCOUT_CONFIG="$HOME/.oss-scout/oss-scout.config.json"
           bun src/cli.ts doctor || echo "doctor reported an issue (continuing; the audit will catch real failures)"
 
+      - name: Stash the verifier outside the working tree
+        run: |
+          set -euo pipefail
+          cp ops/verify-claim.sh "$RUNNER_TEMP/verify-claim.sh"
+          chmod +x "$RUNNER_TEMP/verify-claim.sh"
+
       - name: Contributor window
         env:
           RUN_ONCE: "1"
@@ -129,6 +135,7 @@ jobs:
           RUN_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.run_minutes || '120' }}
           MAX_SUBMITS_PER_DAY: ${{ github.event_name == 'workflow_dispatch' && inputs.max_submits || '2' }}
           OSS_SCOUT_STATE_DIR: ${{ github.workspace }}/../.oss-scout
+          VERIFIER_PATH: ${{ runner.temp }}/verify-claim.sh
         run: |
           set -uo pipefail
           export OSS_SCOUT_STATE_DIR="$HOME/.oss-scout"
