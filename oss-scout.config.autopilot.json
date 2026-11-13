@@ -25,7 +25,11 @@
       "CircuitVerse/*",
       "publiclab/*",
       "sugarlabs/*",
-      "LibreHealth/*"
+      "LibreHealth/*",
+      "OpenRefine/*",
+      "scikit-learn/*",
+      "pandas-dev/*",
+      "laurent22/joplin"
     ],
     "deny": []
   },

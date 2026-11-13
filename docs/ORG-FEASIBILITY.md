@@ -18,6 +18,16 @@ do not re-derive from scratch each cycle.
 | django | CLA + triage process | contributor agreement required | blocked until CLA |
 | openmrs | process-heavy; some repos are tooling | querystore#80 is `.claude/` tooling (out of scope) | selective |
 | LibreHealth | no usable repo pool | GitHub search returned HTTP 422 | skip |
+| OpenRefine | none found | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy | **ADDED** |
+| scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
+| pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
+| joplin | none found | probe: bug 100, no CLA, no AI policy | **ADDED** |
+| astropy | none found | probe: bug 100, no CLA | not added yet (start with four) |
+| sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
+| beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
+| scipy | none found | probe: gfi 3 only | low yield |
+| numpy / matplotlib / networkx | none found | probe: 0 on all three labels | low yield |
+| freeCodeCamp | none found | probe: help-wanted 8 | low yield |
 
 ## Practical consequences
 
