@@ -82,6 +82,12 @@ Re-run any time: `gh workflow run repo-scout.yml -f discover=true -f min_stars=3
   Unread, so unproven either way. **Do not add.**
 - **CircuitVerse — prohibited.** `AGENTS.md`: "Never create a PR". Already excluded.
 - **processing/p5.js — restricted.** No fully AI-generated contributions; agents must converse first.
+- **xerial/sqlite-jdbc — none found (read 2026-11-14).** `CONTRIBUTING.md` asks for Conventional Commits
+  and no force-push; no AI policy, no CLA. Caveat: native code changes need `Build Native` to regenerate
+  the committed libraries under `src/main/resources/org/sqlite/native`, so a C fix plus test is red in
+  CI until then — the maintainer accepted exactly that flow for #1489. Verify with
+  `make clean-native && make native && mvn -Dtest=ExtensionTest test` (the build needs
+  `CC="gcc -Wno-implicit-function-declaration"` on GCC 14+).
 
 Consequence: none of the high-merge repos held back earlier are usable, and that is the correct answer,
 not an obstacle. A merged PR that violates a published policy is worse than no PR.
