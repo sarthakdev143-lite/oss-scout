@@ -47,7 +47,7 @@ fi
 # Overridable so one script serves a box, a codespace, and a single-run CI job.
 START_HOUR_UTC=${START_HOUR_UTC:-1}
 START_MIN_UTC=${START_MIN_UTC:-0}
-MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-2}
+MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-1}
 RUN_MINUTES=${RUN_MINUTES:-120}   # 2h/day fits the Codespaces free quota; CI runs one window then exits
 RUN_ONCE=${RUN_ONCE:-0}           # 1 = exit when the window ends or the quota is met (GitHub Actions)
 FORCE_WINDOW=${FORCE_WINDOW:-0}   # 1 = treat process start as the window start
@@ -172,6 +172,10 @@ while true; do
     echo "    provable, the issue is ELIGIBLE."
     echo "s3) Rank eligible issues: prefer (a) small blast radius, (b) reproducible defect over feature, (c) file count the"
     echo "    repo's tests can cover, (d) maintainer-filed. Take the top one."
+    echo "s3b) CREAM ONLY. Submit nothing rather than something thin. Cream = a real defect a user would feel: wrong output,"
+    echo "     crash, data loss, security, race, broken invariant, or a performance regression. Not cream: typos, wording,"
+    echo "     formatting, version bumps, comment-only edits, test-only additions, or anything whose fix is a one-line string"
+    echo "     change unless that string is a crash or a security guard. If the best candidate today is thin, take zero."
     echo "s4) Report: in docs/daily/$TODAY.md write the pool size per org and, for the top 3 candidates, the exact blocker"
     echo "    or the reason each was not chosen. A cycle may end with zero submissions ONLY when the pool was empty or every"
     echo "    candidate had a provable blocker from s2; state it in those words."
@@ -197,6 +201,8 @@ while true; do
     echo "   mismatch closes the PR automatically."
     echo "6. Stop after $MAX_SUBMITS_PER_DAY submissions. Update docs/daily/$TODAY.md with what ran, skipped, and why."
     echo "7. Rotate orgs across days: do not submit twice to the same org on consecutive days unless a maintainer asked for a follow-up."
+    echo "7b) Spacing: at most ONE submission per org per 14 days, and never two PRs open in one repo at once. Reputation is"
+    echo "    built by being remembered well, not by being frequent."
     echo "8. Every cycle, check your previously submitted OPEN PRs for maintainer comments; address actionable feedback within 24h by updating the PR. Responsiveness is part of the quality bar."
     echo "9. First cycle of the day: read yesterday's docs/daily log and note any quality drift (nit-class PRs, weak tests, slow follow-ups); correct course before new work."
   } >> "$PROMPT_FILE"

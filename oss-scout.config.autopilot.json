@@ -53,8 +53,8 @@
   "caps": {
     "maxOpenPrsPerRepo": 1,
     "repoCooldownDays": 30,
-    "maxSubmittedPrsPerWeek": 14,
-    "maxPendingQueueItems": 10,
+    "maxSubmittedPrsPerWeek": 5,
+    "maxPendingQueueItems": 5,
     "maxConcurrentTasks": 2
   },
   "implementation": {
