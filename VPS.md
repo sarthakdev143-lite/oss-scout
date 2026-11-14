@@ -15,8 +15,8 @@ owner's GitHub account.
 
 ## Limits
 
-- 01:00 UTC window, 120 minutes, at most **1 submission/day and 5/week**. Volume is deliberately low:
-  the goal is cream issues in communities that will remember the work, not throughput.
+- 01:00 UTC window, 120 minutes, at most **2 submissions/day and 14/week**. Volume comes from breadth
+  across many repos, never from crowding one community.
 - No spending cap beyond the model plan; runner is free because the repo is public.
 - Never stop early: if nothing is eligible, say why in the daily log and end the cycle.
 
@@ -47,8 +47,8 @@ Read `docs/ORG-FEASIBILITY.md` first. Then:
   broken invariant, or a performance regression. Not: typos, wording, formatting, version bumps,
   comment-only edits, or test-only additions. A one-line change is fine only when that line is a crash
   or a security guard. If today's best candidate is thin, submit nothing.
-- **Spacing.** One submission per org per 14 days, never two open PRs in one repo. Being remembered
-  well beats being frequent.
+- **Spacing.** One submission per org per day, never two open PRs in one repo. Breadth beats crowding:
+  a wide pool is how volume stays high without any single community seeing you constantly.
 - Never file your own issues on allow-listed repos. Work maintainer-filed issues only.
 - Docs-only changes: at most one per week across all repos. The staple is code with tests.
 - Every code change needs a test that fails before the fix and passes after it.

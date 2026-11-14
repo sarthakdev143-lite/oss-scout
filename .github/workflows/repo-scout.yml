@@ -52,7 +52,7 @@ jobs:
           APPLY: ${{ github.event_name == 'schedule' && '1' || (inputs.apply && '1' || '0') }}
         run: |
           set -uo pipefail
-          ARGS=(--since-days "${SINCE_DAYS:-90}" --summary "$GITHUB_STEP_SUMMARY" --min-stars "${MIN_STARS:-1000}")
+          ARGS=(--since-days "${SINCE_DAYS:-90}" --summary "$GITHUB_STEP_SUMMARY" --min-stars "${MIN_STARS:-1000}" --limit 100)
           if [ "$DISCOVER" = "1" ]; then ARGS+=(--discover); else ARGS+=(--repos "${REPOS:-}"); fi
           if [ "$APPLY" = "1" ]; then ARGS+=(--apply-config oss-scout.config.autopilot.json); fi
           python3 ops/repo-scout.py "${ARGS[@]}"

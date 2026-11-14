@@ -47,7 +47,7 @@ fi
 # Overridable so one script serves a box, a codespace, and a single-run CI job.
 START_HOUR_UTC=${START_HOUR_UTC:-1}
 START_MIN_UTC=${START_MIN_UTC:-0}
-MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-1}
+MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-2}
 RUN_MINUTES=${RUN_MINUTES:-120}   # 2h/day fits the Codespaces free quota; CI runs one window then exits
 RUN_ONCE=${RUN_ONCE:-0}           # 1 = exit when the window ends or the quota is met (GitHub Actions)
 FORCE_WINDOW=${FORCE_WINDOW:-0}   # 1 = treat process start as the window start
@@ -201,8 +201,8 @@ while true; do
     echo "   mismatch closes the PR automatically."
     echo "6. Stop after $MAX_SUBMITS_PER_DAY submissions. Update docs/daily/$TODAY.md with what ran, skipped, and why."
     echo "7. Rotate orgs across days: do not submit twice to the same org on consecutive days unless a maintainer asked for a follow-up."
-    echo "7b) Spacing: at most ONE submission per org per 14 days, and never two PRs open in one repo at once. Reputation is"
-    echo "    built by being remembered well, not by being frequent."
+    echo "7b) Spacing: at most ONE submission per org per day, and never two open PRs in one repo (the 30-day per-repo"
+    echo "    cooldown is separate and still applies). Volume comes from breadth across many repos, not from crowding one."
     echo "8. Every cycle, check your previously submitted OPEN PRs for maintainer comments; address actionable feedback within 24h by updating the PR. Responsiveness is part of the quality bar."
     echo "9. First cycle of the day: read yesterday's docs/daily log and note any quality drift (nit-class PRs, weak tests, slow follow-ups); correct course before new work."
   } >> "$PROMPT_FILE"

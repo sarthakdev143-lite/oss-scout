@@ -10,9 +10,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import base64
 import datetime as dt
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -59,7 +61,26 @@ DISCOVER_SEARCHES = [
     'label:"good first issue" is:issue is:open archived:false language:Python',
     'label:"good first issue" is:issue is:open archived:false language:TypeScript',
     'label:"good first issue" is:issue is:open archived:false language:JavaScript',
+    'label:bug is:issue is:open archived:false language:Python',
+    'label:bug is:issue is:open archived:false language:TypeScript',
+    'label:bug is:issue is:open archived:false language:Java',
 ]
+
+
+def has_cla(repo: str) -> bool:
+    """A CLA/DCO gate means the contribution cannot land without a legal step the owner has not
+    taken. Cheaper to exclude the repo here than to discover it at submission time."""
+    for path in ("CLA.md", "docs/CLA.md", ".github/CLA.md", "CONTRIBUTING.md", ".github/CONTRIBUTING.md"):
+        raw = gh(["api", f"repos/{repo}/contents/{path}", "--jq", ".content"])
+        if not raw:
+            continue
+        try:
+            text = base64.b64decode(raw.strip()).decode("utf-8", "ignore")
+        except Exception:
+            continue
+        if re.search(r"(?i)contributor license agreement|cla-assistant|easycla", text):
+            return True
+    return False
 
 
 def discover(min_stars: int, limit: int) -> list[str]:
@@ -171,6 +192,7 @@ def main() -> int:
     rows = []
     for repo in repos:
         total, merged = outside_merge_stats(repo, since)
+        cla = has_cla(repo)
         gfi = label_count(repo, "good first issue")
         hw = label_count(repo, "help wanted")
         bug = label_count(repo, "bug")
@@ -186,12 +208,13 @@ def main() -> int:
                 "hw": hw,
                 "bug": bug,
                 "supply": supply,
+                "cla": cla,
                 "verdict": verdict(rate, supply),
             }
         )
         print(
             f"{repo:45} outside={total:3} merged={merged:3} rate={rate:4} "
-            f"gfi={gfi:4} hw={hw:4} bug={bug:4} {verdict(rate, supply)}",
+            f"gfi={gfi:4} hw={hw:4} bug={bug:4} cla={'yes' if cla else 'no':3} {verdict(rate, supply)}",
             flush=True,
         )
 
@@ -223,7 +246,10 @@ def main() -> int:
         picked = [
             r["repo"]
             for r in rows
-            if r["rate"] >= args.min_rate and r["supply"] >= args.min_supply and r["repo"] not in pinned
+            if r["rate"] >= args.min_rate
+            and r["supply"] >= args.min_supply
+            and not r.get("cla")
+            and r["repo"] not in pinned
         ]
         room = max(0, args.max_total - len(pinned))
         allow = pinned + picked[:room]
