@@ -88,6 +88,15 @@ Re-run any time: `gh workflow run repo-scout.yml -f discover=true -f min_stars=3
   CI until then — the maintainer accepted exactly that flow for #1489. Verify with
   `make clean-native && make native && mvn -Dtest=ExtensionTest test` (the build needs
   `CC="gcc -Wno-implicit-function-declaration"` on GCC 14+).
+- **laurent22/joplin — CLA gate (read 2026-11-14).** `readme/dev/index.md` (linked from CONTRIBUTING):
+  "All contributors to the project must sign our Individual Contributor License Agreement"; the terms
+  are in `readme/cla.md`. Signing is a legal act for the account owner, not something this loop can do.
+  No joplin PR or issue exists on this account, so no CLA is on file. The pool is otherwise excellent
+  (10 maintainer-filed unassigned bugs on 2026-11-14, including a fresh print ENOENT bug), so this is
+  worth revisiting if the owner signs. **Do not submit before then.**
+- **astropy/astropy — prohibited for this use (read 2026-11-14).** The policy astropy links says
+  autonomous workflows are not human contributors and reviewers expect the human controlling the
+  account. **Do not submit.**
 
 Consequence: none of the high-merge repos held back earlier are usable, and that is the correct answer,
 not an obstacle. A merged PR that violates a published policy is worse than no PR.
@@ -97,7 +106,8 @@ not an obstacle. A merged PR that violates a published policy is worse than no P
 
 Active set = repos with a real merge rate and actual labeled supply, excluding known
 AI/CLA/assignment gates: OWASP/OWASP-Hunting, OWASP/wstg, OWASP/owasp-mastg,
-OpenRefine, joplin, astropy, freeCodeCamp, sugarlabs/musicblocks-v4, wagtail/wagtail.org.
+OpenRefine, freeCodeCamp, sugarlabs/musicblocks-v4, wagtail/wagtail.org.
+joplin is held by a CLA; astropy by its AI policy (both read 2026-11-14).
 
 Dropped on evidence, not on taste: oppia (9%), CircuitVerse (3%, AI prohibited), django (19%),
 scikit-learn (20%), pandas (24%), zulip (21%), RocketChat (17%), openmrs-core (14%),
@@ -126,8 +136,8 @@ wording is read and accepted.
 | OpenRefine | none found | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy | **ADDED** |
 | scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
 | pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| joplin | none found | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| astropy | none found | probe: bug 100, no CLA | not added yet (start with four) |
+| joplin | **CLA required** | CONTRIBUTING: "All contributors to the project must sign our Individual Contributor License Agreement"; terms in `readme/cla.md`. No joplin PR/issue by this account (gh search 2026-11-14), so no CLA on file. | **blocked until the owner signs** |
+| astropy | **AI policy restricted** | linked policy treats autonomous workflows as not human contributors | **blocked** |
 | sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
 | scipy | none found | probe: gfi 3 only | low yield |
