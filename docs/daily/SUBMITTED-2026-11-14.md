@@ -1,0 +1,1 @@
+- xerial/sqlite-jdbc https://github.com/xerial/sqlite-jdbc/pull/1509 8b6b8bae2e3794c461e688ef8c29118538748b12 code+tests https://github.com/xerial/sqlite-jdbc/issues/1508 src/main/ext/extension-functions.c make clean-native && make native CC="gcc -Wno-implicit-function-declaration" && mvn -B -Dtest=ExtensionTest test
