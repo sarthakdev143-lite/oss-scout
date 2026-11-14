@@ -36,17 +36,12 @@
       "freeCodeCamp/freeCodeCamp",
       "sugarlabs/musicblocks-v4",
       "wagtail/wagtail.org",
-      "rstudio/rstudio",
       "xerial/sqlite-jdbc",
       "neomjs/neo",
-      "MorpheApp/morphe-patches",
-      "florianfesti/boxes",
-      "The-PR-Agent/pr-agent",
-      "soxoj/maigret",
-      "PrefectHQ/prefect",
-      "makecindy/cindy",
-      "jenkinsci/jenkins",
-      "anthropics/claude-code"
+      "homarr-labs/homarr",
+      "apache/amoro",
+      "layer5io/layer5",
+      "soxoj/maigret"
     ],
     "deny": []
   },

@@ -177,6 +177,7 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=40, help="max discovered repos to rank")
     ap.add_argument("--apply-config", default="", help="rewrite this config's repos.allow from pinned + the ranking")
     ap.add_argument("--pinned", default="ops/pinned-repos.txt")
+    ap.add_argument("--denied", default="ops/denied-repos.txt")
     ap.add_argument("--max-total", type=int, default=30)
     ap.add_argument("--min-rate", type=int, default=40, help="merge-rate floor for automatic inclusion")
     ap.add_argument("--min-supply", type=int, default=5, help="labeled-issue floor for automatic inclusion")
@@ -243,6 +244,13 @@ def main() -> int:
         except FileNotFoundError:
             print(f"warning: {args.pinned} not found; pinned set is empty")
 
+        denied: set[str] = set()
+        try:
+            with open(args.denied, encoding="utf-8") as fh:
+                denied = {ln.strip() for ln in fh if ln.strip() and not ln.startswith("#")}
+        except FileNotFoundError:
+            print(f"warning: {args.denied} not found; no deny list")
+
         picked = [
             r["repo"]
             for r in rows
@@ -250,6 +258,7 @@ def main() -> int:
             and r["supply"] >= args.min_supply
             and not r.get("cla")
             and r["repo"] not in pinned
+            and r["repo"] not in denied
         ]
         room = max(0, args.max_total - len(pinned))
         allow = pinned + picked[:room]

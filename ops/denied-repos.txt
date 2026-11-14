@@ -1,0 +1,14 @@
+# Never add these, whatever the ranking says. One per line.
+# Reason in the comment above each group.
+
+# Not a contribution target: vendor feedback repo / generated patch dumps / unknown projects.
+anthropics/claude-code
+MorpheApp/morphe-patches
+The-PR-Agent/pr-agent
+makecindy/cindy
+
+# AI policy not read: do not send autonomous PRs until someone reads it.
+jenkinsci/jenkins
+
+# Large corporate projects where an outside fix needs a CLA or an internal design sign-off.
+rstudio/rstudio
