@@ -88,6 +88,14 @@ Re-run any time: `gh workflow run repo-scout.yml -f discover=true -f min_stars=3
   CI until then — the maintainer accepted exactly that flow for #1489. Verify with
   `make clean-native && make native && mvn -Dtest=ExtensionTest test` (the build needs
   `CC="gcc -Wno-implicit-function-declaration"` on GCC 14+).
+- **OpenRefine/OpenRefine — agent-friendly; issue types replaced the old `bug` label (read 2026-11-14).**
+  `AGENTS.md` requires `./refine lint`, tests, and no force-push; `CONTRIBUTING.md` has no AI
+  prohibition, and maintainer guidance in #7871 asks AI-assisted PRs to disclose the tool used.
+  Usable. One selection caveat: OpenRefine moved bug classification to GitHub issue types in its
+  October 2026 triage migration. Exact `label:bug` searches now miss maintainer-designated bugs —
+  e.g. #7367 is issue type `Bug` (labels `import`/`XLS(X)`), and its timeline shows
+  `issue_type_added` plus the old labels removed. Treat the issue type as the repo's bug
+  designation, or the labeled pool will look empty when it is not.
 - **laurent22/joplin — CLA gate (read 2026-11-14).** `readme/dev/index.md` (linked from CONTRIBUTING):
   "All contributors to the project must sign our Individual Contributor License Agreement"; the terms
   are in `readme/cla.md`. Signing is a legal act for the account owner, not something this loop can do.
@@ -133,7 +141,7 @@ wording is read and accepted.
 | django | CLA + triage process | contributor agreement required | blocked until CLA |
 | openmrs | process-heavy; some repos are tooling | querystore#80 is `.claude/` tooling (out of scope) | selective |
 | LibreHealth | no usable repo pool | GitHub search returned HTTP 422 | skip |
-| OpenRefine | none found | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy | **ADDED** |
+| OpenRefine | none found; agent guidance | probe 2026-11-13: gfi 5, help-wanted 19, no CLA. `AGENTS.md` reviewed 2026-11-14: lint/tests required, no AI prohibition. Issue types replaced the `bug` label (see verdict above). | **WORKS** |
 | scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
 | pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
 | joplin | **CLA required** | CONTRIBUTING: "All contributors to the project must sign our Individual Contributor License Agreement"; terms in `readme/cla.md`. No joplin PR/issue by this account (gh search 2026-11-14), so no CLA on file. | **blocked until the owner signs** |
