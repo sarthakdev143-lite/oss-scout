@@ -111,7 +111,8 @@ wording is read and accepted.
 
 | Org | Gate | Evidence | Status |
 |---|---|---|---|
-| OWASP | none found | PR #98 verified end to end (fix + failing test) | **WORKS** |
+| OWASP/OWASP-Hunting | no CLA/AI gate; 30-day repo cooldown after a submission | PR #98 verified end to end (fix + failing test) on 2026-11-13; the merge starts the configured 30-day cooldown, so new PRs are closed until 2026-12-13 | **WORKS after 2026-12-13** |
+| OWASP/mastg (allow-list alias `OWASP/owasp-mastg`) | assignment process + tests-only supply | repo renamed; search under the old alias returns 0 while the canonical name has 7 `tests` issues: 5 `TEMPORARILY-BLOCKED-FROM-ASSIGNMENT`, 1 assigned, 1 unassigned but test/demo-only (#3899) | **no cream; use canonical name** |
 | zulip | must carry `help wanted` to claim | zulipbot rejected a claim on a `bug`-only issue | works, narrow |
 | jenkinsci | none found, but heavy build | core changes need Stapler/URL-binding depth | works for plugins, not core |
 | RocketChat | CLA on main repo; SDK at per-repo cap | #438 open | partly blocked |
@@ -127,7 +128,7 @@ wording is read and accepted.
 | OpenRefine | none found | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy | **ADDED** |
 | scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
 | pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| joplin | Individual CLA required | `readme/cla.md` + CONTRIBUTING: "All contributors ... must sign our Individual Contributor License Agreement"; no CLA on file for this account. Six fresh maintainer-filed bugs (2026-06-30…2026-11-14, e.g. #17105, #17095) are otherwise eligible | blocked until owner signs |
+| joplin | Individual CLA required | `readme/dev/index.md` (lines 67-69): "All contributors to the project must sign our Individual Contributor License Agreement"; no CLA on file for this account (no joplin PR from it). 24 fresh maintainer-filed labeled issues (2026-07-30…2026-11-14, e.g. #17105, #17095) are otherwise eligible | blocked until owner signs |
 | astropy | AI policy: autonomous agents are not human contributors | see the policy verdicts above | **do not touch** |
 | sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
@@ -146,3 +147,13 @@ wording is read and accepted.
   2026-11-13 did. That standard is the difference between a real hold and a filter eating the pool.
 - If throughput must rise, the lever is **more orgs without CLA/assignment gates**, not a looser
   quality bar.
+
+## Funnel hygiene (2026-11-15 cycle 3)
+
+GitHub issue search does not follow repository renames. `OWASP/owasp-mastg` now redirects to
+`OWASP/mastg`: a sweep using the alias reports 0 issues, while the canonical name has 7
+`tests`-labeled issues. `gh issue list --repo OWASP/owasp-mastg` follows the redirect, but the
+GraphQL/REST search API does not. The allow-list and the config still carry the old alias; update
+them to `OWASP/mastg` so future sweeps do not undercount. The pool conclusion for this repo is
+unchanged (test/demo-only, five explicitly blocked), but a silently empty row is the kind of
+funnel bug that looks like "no supply" for months.
