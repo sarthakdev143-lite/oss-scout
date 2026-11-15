@@ -153,7 +153,8 @@ wording is read and accepted.
 GitHub issue search does not follow repository renames. `OWASP/owasp-mastg` now redirects to
 `OWASP/mastg`: a sweep using the alias reports 0 issues, while the canonical name has 7
 `tests`-labeled issues. `gh issue list --repo OWASP/owasp-mastg` follows the redirect, but the
-GraphQL/REST search API does not. The allow-list and the config still carry the old alias; update
-them to `OWASP/mastg` so future sweeps do not undercount. The pool conclusion for this repo is
-unchanged (test/demo-only, five explicitly blocked), but a silently empty row is the kind of
-funnel bug that looks like "no supply" for months.
+GraphQL/REST search API does not. The allow-list and the config carried the old alias; cycle 5
+opened `sarthakdev143-lite/oss-scout#1` to pin `OWASP/mastg` in both so future sweeps do not
+undercount (merge pending). The pool conclusion for this repo is unchanged (test/demo-only, five
+explicitly blocked), but a silently empty row is the kind of funnel bug that looks like "no
+supply" for months.
