@@ -2,7 +2,7 @@
 # Curated: verified, GSoC-aligned, or already carrying an open PR. One per line.
 OWASP/OWASP-Hunting
 OWASP/wstg
-OWASP/owasp-mastg
+OWASP/mastg
 OpenRefine/OpenRefine
 laurent22/joplin
 astropy/astropy
