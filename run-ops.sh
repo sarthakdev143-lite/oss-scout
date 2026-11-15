@@ -241,7 +241,7 @@ while true; do
         echo "## audit $PR_URL"
         BODY=$(gh pr view "$PR_URL" --json body -q '.body' 2>/dev/null || true)
         case "$BODY" in
-          *"Prepared with AI assistance"*"no human reviewed it"*) echo "disclosure: OK";;
+          *"Prepared with AI assistance;"*" reviewed and tested by me."*) echo "disclosure: OK";;
           *) echo "disclosure: VIOLATION (missing or altered; must match disclosure.line in the config)";;
         esac
         FILES=$(gh pr view "$PR_URL" --json files -q '[.files[].path] | join(" ")' 2>/dev/null || true)

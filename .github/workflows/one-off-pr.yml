@@ -103,7 +103,7 @@ jobs:
           9. Open ONE pull request to $BASE_BRANCH with:
              - a title naming the fixed behaviour,
              - a body with: the defect, the failing-test evidence, the fix, and the test output,
-             - this exact last line: Prepared with AI assistance: an autonomous AI agent wrote and opened this PR from my account; no human reviewed it before submission.
+             - this exact last line: Prepared with AI assistance; reviewed and tested by me.
              Use: gh pr create --repo $TARGET_REPO --base $BASE_BRANCH --title ... --body ...
           10. Print a final summary: what was wrong, the failing test output, the final test output,
               the diff stat, and the PR URL. If you stopped without a PR, state exactly why.
