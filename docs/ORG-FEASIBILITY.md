@@ -67,8 +67,13 @@ effort until the merge picture changes.
 
 Re-run any time: `gh workflow run repo-scout.yml -f discover=true -f min_stars=300`.
 
-## AI-policy verdicts (read 2026-11-14, not inferred)
+## AI-policy verdicts (read 2026-11-14, astropy added 2026-11-15, not inferred)
 
+- **astropy/astropy — PROHIBITED for this use.** `CONTRIBUTING.md` links
+  `astropy/astropy-project/policies/ai-policy.md`, which states:
+  `Autonomous workflows ("agents") are not human contributors. Astropy reviewers expect to
+  interact with the human controlling the account, or we will close the PR.`
+  Disclosure alone does not satisfy it. **Do not submit.**
 - **beeware/briefcase — PROHIBITED for this use.** CONTRIBUTING says AI tools are neither encouraged nor
   prohibited, but the linked AI Policy's *Intentionality* section says: "We do not accept unsolicited
   pull requests or issues that result from running an autonomous tool over the BeeWare code base." It also
@@ -89,9 +94,10 @@ not an obstacle. A merged PR that violates a published policy is worse than no P
 ## Consequence for the allow-list
 
 
-Active set = repos with a real merge rate and actual labeled supply, excluding known
-AI/CLA/assignment gates: OWASP/OWASP-Hunting, OWASP/wstg, OWASP/owasp-mastg,
-OpenRefine, joplin, astropy, freeCodeCamp, sugarlabs/musicblocks-v4, wagtail/wagtail.org.
+Active set = repos with a real merge rate and actual labeled supply that survive the gates:
+OWASP/wstg, OWASP/owasp-mastg, freeCodeCamp, wagtail/wagtail.org. OpenRefine and
+OWASP/OWASP-Hunting are usable but sit under the 30-day repo cooldown; joplin is CLA-gated;
+astropy is AI-policy-gated; sugarlabs/musicblocks-v4 is assignment-gated.
 
 Dropped on evidence, not on taste: oppia (9%), CircuitVerse (3%, AI prohibited), django (19%),
 scikit-learn (20%), pandas (24%), zulip (21%), RocketChat (17%), openmrs-core (14%),
@@ -111,7 +117,7 @@ wording is read and accepted.
 | oppia | CLA + approved approach + assignment | no recorded CLA for this account | blocked until CLA |
 | CircuitVerse | AI contributions prohibited | `AGENTS.md`: "Never create a PR" | **do not touch** |
 | processing / p5.js | AI contributions restricted | policy: no fully AI-generated work; converse first | **do not touch** |
-| sugarlabs | maintainer assignment required before starting | README process | blocked until assigned |
+| sugarlabs | maintainer assignment required before starting | README: "Wait for the issue to be assigned to you"; repo merged a `/assign` workflow 2026-11-14 (`abb82c9`); `CONTRIBUTING.md` says "No permission is needed. Unassigned issues are free to pick up" (older, 2026-07-09), so the docs conflict; README + bot are newer | blocked until assigned |
 | publiclab | dormant repos, stale issues | recent issues >180 days | low yield |
 | wagtail | often already has a linked PR | #652/#658, #104/#105 | check for PR first |
 | django | CLA + triage process | contributor agreement required | blocked until CLA |
@@ -120,8 +126,8 @@ wording is read and accepted.
 | OpenRefine | none found | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy | **ADDED** |
 | scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
 | pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| joplin | none found | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| astropy | none found | probe: bug 100, no CLA | not added yet (start with four) |
+| joplin | Individual CLA required | `readme/cla.md` + CONTRIBUTING: "All contributors ... must sign our Individual Contributor License Agreement"; no CLA on file for this account | blocked until owner signs |
+| astropy | AI policy: autonomous agents are not human contributors | see the policy verdicts above | **do not touch** |
 | sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
 | scipy | none found | probe: gfi 3 only | low yield |
