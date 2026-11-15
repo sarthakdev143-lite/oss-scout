@@ -111,7 +111,7 @@ wording is read and accepted.
 
 | Org | Gate | Evidence | Status |
 |---|---|---|---|
-| OWASP/OWASP-Hunting | no CLA/AI gate; 30-day repo cooldown after a submission | PR #98 verified end to end (fix + failing test) on 2026-11-13; the merge starts the configured 30-day cooldown, so new PRs are closed until 2026-12-13 | **WORKS after 2026-12-13** |
+| OWASP/OWASP-Hunting | no CLA/AI gate; 30-day repo cooldown after a submission | PR #98 verified end to end (fix + failing test) merged 2026-11-13T17:29Z; the configured 30-day cooldown closes new PRs until 2026-12-13T17:29Z. Three fresh maintainer-filed cream issues (#73 duplicate payloads, #91 tablet layout, #90 WCAG target size) are unlinked and wait on that cooldown | **WORKS after 2026-12-13** |
 | OWASP/mastg (allow-list alias `OWASP/owasp-mastg`) | assignment process + tests-only supply | repo renamed; search under the old alias returns 0 while the canonical name has 7 `tests` issues: 5 `TEMPORARILY-BLOCKED-FROM-ASSIGNMENT`, 1 assigned, 1 unassigned but test/demo-only (#3899) | **no cream; use canonical name** |
 | zulip | must carry `help wanted` to claim | zulipbot rejected a claim on a `bug`-only issue | works, narrow |
 | jenkinsci | none found, but heavy build | core changes need Stapler/URL-binding depth | works for plugins, not core |
