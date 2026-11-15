@@ -191,7 +191,7 @@ while true; do
     echo "1. Work only repos under repos.allow in $STATE_DIR/oss-scout.config.json. Never touch main directly."
     echo "2. Do the pipeline YOURSELF (the local scheduler has no LLM host, so ticks alone never start work; you are the worker): (a) check caps via status + today's SUBMITTED file, stop if quota met; (b) rotation: pick the next allow-listed org with no submission in the last 2 days; (c) run one scheduler tick for follow-ups only; (d) find ONE maintainer-filed issue with target labels via gh (verify labels, recent maintainer activity, CI, AI policy); none eligible = log the reason in docs/daily/$TODAY.md and end the cycle with zero submissions; (e) implement in a clean /tmp workspace + docker sandbox (baseline first, failing test first for bugs, minimal diff); (f) verify gate + critic self-review at 0.85 + strict security pass; one issue per cycle max."
     echo "3. Submit a PR ONLY if ALL hold: verification gate passes, critic approves, strict security review passes, repo AI policy is clear, disclosure line present, diff within limits, caps allow it."
-    echo "4. Submit with gh using the write token only: fork, push the exact reviewed commit, open PR with disclosure. A candidate is skipped ONLY for a provable blocker from s2 or a mandatory upstream gate (CLA, assignment, AI policy); record which one."
+    echo "4. Submit with gh using the write token only: fork, push the exact reviewed commit, open PR whose body ends with disclosure.line from $STATE_DIR/oss-scout.config.json copied verbatim (never claim a human reviewed it). A candidate is skipped ONLY for a provable blocker from s2 or a mandatory upstream gate (CLA, assignment, AI policy); record which one."
     echo "5. Append one line per submitted PR to docs/daily/SUBMITTED-$TODAY.md, exactly these 7 fields:"
     echo "   '- <owner/repo> <PR-URL> <digest> <code+tests|docs-only> <maintainer-issue-URL> <fixed_file> <verify_cmd>'"
     echo "   fixed_file = the source file your fix changed. verify_cmd = the exact command that proves the fix in a"
@@ -241,8 +241,8 @@ while true; do
         echo "## audit $PR_URL"
         BODY=$(gh pr view "$PR_URL" --json body -q '.body' 2>/dev/null || true)
         case "$BODY" in
-          *"Prepared with AI assistance"*) echo "disclosure: OK";;
-          *) echo "disclosure: VIOLATION (missing)";;
+          *"Prepared with AI assistance"*"no human reviewed it"*) echo "disclosure: OK";;
+          *) echo "disclosure: VIOLATION (missing or altered; must match disclosure.line in the config)";;
         esac
         FILES=$(gh pr view "$PR_URL" --json files -q '[.files[].path] | join(" ")' 2>/dev/null || true)
         echo "files: $FILES"
