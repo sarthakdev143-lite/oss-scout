@@ -1,0 +1,1 @@
+- sugarlabs/musicblocks-v4 https://github.com/sugarlabs/musicblocks-v4/pull/1041 ae7811ec4099c6f1ec0a6d1c90ecfd78b6715cc7 code+tests https://github.com/sugarlabs/musicblocks-v4/issues/886 modules/masonry/src/hooks/useDragFromPalette.ts npm test --workspace @sugarlabs/mb4-module-masonry -- run src/hooks/useDragFromPalette.test.tsx

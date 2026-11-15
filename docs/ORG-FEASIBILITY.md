@@ -95,9 +95,10 @@ not an obstacle. A merged PR that violates a published policy is worse than no P
 
 
 Active set = repos with a real merge rate and actual labeled supply that survive the gates:
-OWASP/wstg, OWASP/owasp-mastg, freeCodeCamp, wagtail/wagtail.org. OpenRefine and
+OWASP/wstg, OWASP/owasp-mastg, freeCodeCamp, wagtail/wagtail.org, sugarlabs/musicblocks-v4
+(self-assignable via `/assign`). OpenRefine and
 OWASP/OWASP-Hunting are usable but sit under the 30-day repo cooldown; joplin is CLA-gated;
-astropy is AI-policy-gated; sugarlabs/musicblocks-v4 is assignment-gated.
+astropy is AI-policy-gated.
 
 Dropped on evidence, not on taste: oppia (9%), CircuitVerse (3%, AI prohibited), django (19%),
 scikit-learn (20%), pandas (24%), zulip (21%), RocketChat (17%), openmrs-core (14%),
@@ -117,7 +118,7 @@ wording is read and accepted.
 | oppia | CLA + approved approach + assignment | no recorded CLA for this account | blocked until CLA |
 | CircuitVerse | AI contributions prohibited | `AGENTS.md`: "Never create a PR" | **do not touch** |
 | processing / p5.js | AI contributions restricted | policy: no fully AI-generated work; converse first | **do not touch** |
-| sugarlabs | maintainer assignment required before starting | README: "Wait for the issue to be assigned to you"; repo merged a `/assign` workflow 2026-11-14 (`abb82c9`); `CONTRIBUTING.md` says "No permission is needed. Unassigned issues are free to pick up" (older, 2026-07-09), so the docs conflict; README + bot are newer | blocked until assigned |
+| sugarlabs | self-service assignment via `/assign` | README asks contributors to wait for assignment; the repo's `/assign` workflow (merged 2026-11-14, `abb82c9`) assigns the commenter automatically when they have no open PR and no other open issue. Verified: run 43595625999 self-assigned @prx-my on #1023 (11-14), and #886 assigned this account at 2026-11-15T07:51Z. `CONTRIBUTING.md`'s older "no permission needed" text is superseded | **WORKS — claim first, then start** |
 | publiclab | dormant repos, stale issues | recent issues >180 days | low yield |
 | wagtail | often already has a linked PR | #652/#658, #104/#105 | check for PR first |
 | django | CLA + triage process | contributor agreement required | blocked until CLA |
@@ -126,7 +127,7 @@ wording is read and accepted.
 | OpenRefine | none found | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy | **ADDED** |
 | scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
 | pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| joplin | Individual CLA required | `readme/cla.md` + CONTRIBUTING: "All contributors ... must sign our Individual Contributor License Agreement"; no CLA on file for this account | blocked until owner signs |
+| joplin | Individual CLA required | `readme/cla.md` + CONTRIBUTING: "All contributors ... must sign our Individual Contributor License Agreement"; no CLA on file for this account. Six fresh maintainer-filed bugs (2026-06-30…2026-11-14, e.g. #17105, #17095) are otherwise eligible | blocked until owner signs |
 | astropy | AI policy: autonomous agents are not human contributors | see the policy verdicts above | **do not touch** |
 | sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
@@ -138,8 +139,9 @@ wording is read and accepted.
 
 - The realistic steady state with these gates is roughly **1 verified PR/day**, not 2. The cap stays
   at 2 as a ceiling; do not manufacture work to fill it.
-- Highest-yield path today: **OWASP** (proven), then **jenkinsci plugins** (no CLA, real labeled
-  issues), then **zulip** issues that actually carry `help wanted`.
+- Highest-yield path today: **sugarlabs/musicblocks-v4** (self-service `/assign`, 18 maintainer-filed
+  unassigned issues), then **OWASP** once the repo cooldown clears (proven), then **jenkinsci plugins**
+  (no CLA, real labeled issues), then **zulip** issues that actually carry `help wanted`.
 - A cycle that reports "no eligible survivor" must name the gate per candidate, as cycle 4 of
   2026-11-13 did. That standard is the difference between a real hold and a filter eating the pool.
 - If throughput must rise, the lever is **more orgs without CLA/assignment gates**, not a looser
