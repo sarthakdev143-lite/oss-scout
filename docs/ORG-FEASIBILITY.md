@@ -126,6 +126,8 @@ wording is read and accepted.
 | Org | Gate | Evidence | Status |
 |---|---|---|---|
 | OWASP | none found | PR #98 verified end to end (fix + failing test) | **WORKS** |
+| OWASP/wstg | no gate, but no target-labeled supply | probe 2026-11-16: 24 open, 11 unassigned, 0 carrying `good first issue`/`help wanted`/`bug`/`confirmed`/`tests`/`documentation`; the labels are `new`, `revise`, `enhancement`, `question` | empty under the target-label rule |
+| OWASP/mastg (allow-list names it `OWASP/owasp-mastg`; GitHub resolves to `OWASP/mastg`) | assignment required before a PR; first-time AI contributors must attach an AI session export and staged review commits | contributing page (read 2026-11-16): "Only open a pull request after an issue has been assigned to you or after receiving explicit prior approval"; `.github/PULL_REQUEST_TEMPLATE.md` AI disclosure; 100 open, 7 target-labeled, 5 of 7 also `TEMPORARILY-BLOCKED-FROM-ASSIGNMENT` | **do not touch unattended** |
 | zulip | must carry `help wanted` to claim | zulipbot rejected a claim on a `bug`-only issue | works, narrow |
 | jenkinsci | none found, but heavy build | core changes need Stapler/URL-binding depth | works for plugins, not core |
 | RocketChat | CLA on main repo; SDK at per-repo cap | #438 open | partly blocked |
@@ -144,7 +146,7 @@ wording is read and accepted.
 | joplin | unsolicited PRs closed without review | #16803; maintainer closed PR #17102 with it on 2026-11-14 | **do not touch** |
 | astropy | PR template requires "I certify that I am human" | `.github/PULL_REQUEST_TEMPLATE.md` (read 2026-11-16) | **do not touch** |
 | apache/amoro | no AI policy found; claim with a literal `take` comment | #4455 submitted 2026-11-16 as PR #4507; 67% outside merge rate | **WORKS** |
-| neomjs/neo | claim via bot; one open curated claim | `CONTRIBUTING.md` "Claim before you start" (read 2026-11-16); #21016 covered by PR #21015; #20747 held for #20751 | **WORKS — first claim wins; core scheduling fork is held** |
+| neomjs/neo | claim via bot; one open curated claim | `CONTRIBUTING.md` "Claim before you start" (read 2026-11-16); #21016 covered by PR #21015; #20747 held for #20751; #20780 claim extended by `neo-opus-vega` to 2026-11-18 23:59Z (PR #20828 closed, reopen pending; #20865 already landed the main-side metadata-only half) | **WORKS — first claim wins; core scheduling fork and #20780 are held** |
 | homarr-labs/homarr | AI-assisted PR needs running-app before/after screenshots; tests only when requested | `AGENTS.md` §AI-assisted pull requests and §Testing (read 2026-11-16) | **WORKS — high evidence cost; not usable without a fixture** |
 | sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
