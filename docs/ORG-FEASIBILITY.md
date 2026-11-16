@@ -88,6 +88,16 @@ Re-run any time: `gh workflow run repo-scout.yml -f discover=true -f min_stars=3
 - **laurent22/joplin — unsolicited PRs are closed.** Issue #16803, filed by the maintainer on 2026-10-08,
   says drive-by and unsolicited PRs "will be closed without review". On 2026-11-14 the maintainer closed
   PR #17102 (the #17056 turndown fix) with exactly that link. **Do not submit.**
+- **homarr-labs/homarr — allowed with a high evidence bar.** `AGENTS.md` §"AI-assisted pull requests"
+  (read 2026-11-16) requires every agent-prepared PR to reproduce the case in the running app on
+  unmodified `dev` and on the PR head with `agent-browser`, open the PR body with a before/after
+  screenshot table, disclose AI assistance in plain words, and never use the `homarr-triage`
+  disclaimer. Not a prohibition, but do not claim a Homarr issue without a runnable app fixture.
+- **neomjs/neo — AI agents welcome, claims are first-come.** `CONTRIBUTING.md` (read 2026-11-16)
+  supports agent skills and requires a comment to claim a curated issue before starting; the bot
+  assigns the first eligible claimant and the claim lasts three days. PRs need the canonical
+  `Resolves #<issue>` body and an `Authored by` line. #21016 is not practically available: open PR
+  #21015 carries the same Effect-button fix and the maintainer is steering it to that ticket.
 
 Consequence: none of the high-merge repos held back earlier are usable, and that is the correct answer,
 not an obstacle. A merged PR that violates a published policy is worse than no PR.
@@ -130,6 +140,8 @@ wording is read and accepted.
 | joplin | unsolicited PRs closed without review | #16803; maintainer closed PR #17102 with it on 2026-11-14 | **do not touch** |
 | astropy | PR template requires "I certify that I am human" | `.github/PULL_REQUEST_TEMPLATE.md` (read 2026-11-16) | **do not touch** |
 | apache/amoro | no AI policy found; claim with a literal `take` comment | #4455 submitted 2026-11-16 as PR #4507; 67% outside merge rate | **WORKS** |
+| neomjs/neo | claim via bot; one open curated claim | `CONTRIBUTING.md` "Claim before you start" (read 2026-11-16); #21016 covered by PR #21015 | **WORKS — first claim wins** |
+| homarr-labs/homarr | AI-assisted PR needs running-app before/after screenshots | `AGENTS.md` §AI-assisted pull requests (read 2026-11-16) | **WORKS — high evidence cost** |
 | sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
 | scipy | none found | probe: gfi 3 only | low yield |
