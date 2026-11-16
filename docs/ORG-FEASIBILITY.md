@@ -126,7 +126,7 @@ wording is read and accepted.
 | Org | Gate | Evidence | Status |
 |---|---|---|---|
 | OWASP | none found | PR #98 verified end to end (fix + failing test) | **WORKS** |
-| OWASP/wstg | no gate, but no target-labeled supply | probe 2026-11-16: 24 open, 11 unassigned, 0 carrying `good first issue`/`help wanted`/`bug`/`confirmed`/`tests`/`documentation`; the labels are `new`, `revise`, `enhancement`, `question` | empty under the target-label rule |
+| OWASP/wstg | no gate, but no target-labeled supply | probe 2026-11-16: 24 open, 8 unassigned, 0 carrying `good first issue`/`help wanted`/`bug`/`confirmed`/`tests`/`documentation`; the labels are `new`, `revise`, `enhancement`, `question` | empty under the target-label rule |
 | OWASP/mastg (allow-list names it `OWASP/owasp-mastg`; GitHub resolves to `OWASP/mastg`) | assignment required before a PR; first-time AI contributors must attach an AI session export and staged review commits | contributing page (read 2026-11-16): "Only open a pull request after an issue has been assigned to you or after receiving explicit prior approval"; `.github/PULL_REQUEST_TEMPLATE.md` AI disclosure; 100 open, 7 target-labeled, 5 of 7 also `TEMPORARILY-BLOCKED-FROM-ASSIGNMENT` | **do not touch unattended** |
 | zulip | must carry `help wanted` to claim | zulipbot rejected a claim on a `bug`-only issue | works, narrow |
 | jenkinsci | none found, but heavy build | core changes need Stapler/URL-binding depth | works for plugins, not core |
