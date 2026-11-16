@@ -136,8 +136,9 @@ wording is read and accepted.
 | CircuitVerse | AI contributions prohibited | `AGENTS.md`: "Never create a PR" | **do not touch** |
 | processing / p5.js | AI contributions restricted | policy: no fully AI-generated work; converse first | **do not touch** |
 | sugarlabs | maintainer assignment required before starting | README process. 2026-11-16 maintainer-filed singer defects #1050–#1054 are unassigned and concrete, but #1041 is still open, so no second PR in musicblocks-v4 | blocked until assigned; no second open PR |
+| xerial/sqlite-jdbc | per-repo cap; no AI policy found | open PR #1509 already fixes new #1508 (SIGSEGV in bundled `rightstr()` for a large negative length); 87% outside merge rate | **WORKS — one PR at a time** |
 | publiclab | dormant repos, stale issues | recent issues >180 days | low yield |
-| wagtail | often already has a linked PR | #652/#658, #104/#105 | check for PR first |
+| wagtail | often already has a linked PR; #75 is a product decision | #652/#658; #75: 2025-02-09 maintainer comment says the teaser-plus-summary feed is desired, and the 2026-09-30 follow-up points to the still-open upstream design proposal wagtail/wagtail#14666 | check for PR first |
 | django | CLA + triage process | contributor agreement required | blocked until CLA |
 | openmrs | process-heavy; some repos are tooling | querystore#80 is `.claude/` tooling (out of scope) | selective |
 | LibreHealth | no usable repo pool | GitHub search returned HTTP 422 | skip |
