@@ -82,6 +82,12 @@ Re-run any time: `gh workflow run repo-scout.yml -f discover=true -f min_stars=3
   Unread, so unproven either way. **Do not add.**
 - **CircuitVerse — prohibited.** `AGENTS.md`: "Never create a PR". Already excluded.
 - **processing/p5.js — restricted.** No fully AI-generated contributions; agents must converse first.
+- **astropy/astropy — blocked by author certification.** `.github/PULL_REQUEST_TEMPLATE.md` requires the
+  author to check "I certify that I am human and that I take full responsibility for this pull request"
+  (read 2026-11-16). An unattended PR cannot honestly satisfy a mandatory template field. **Do not submit.**
+- **laurent22/joplin — unsolicited PRs are closed.** Issue #16803, filed by the maintainer on 2026-10-08,
+  says drive-by and unsolicited PRs "will be closed without review". On 2026-11-14 the maintainer closed
+  PR #17102 (the #17056 turndown fix) with exactly that link. **Do not submit.**
 
 Consequence: none of the high-merge repos held back earlier are usable, and that is the correct answer,
 not an obstacle. A merged PR that violates a published policy is worse than no PR.
@@ -91,7 +97,8 @@ not an obstacle. A merged PR that violates a published policy is worse than no P
 
 Active set = repos with a real merge rate and actual labeled supply, excluding known
 AI/CLA/assignment gates: OWASP/OWASP-Hunting, OWASP/wstg, OWASP/owasp-mastg,
-OpenRefine, joplin, astropy, freeCodeCamp, sugarlabs/musicblocks-v4, wagtail/wagtail.org.
+OpenRefine, freeCodeCamp, sugarlabs/musicblocks-v4, wagtail/wagtail.org, apache/amoro.
+(joplin and astropy were removed on 2026-11-16; their gates are below.)
 
 Dropped on evidence, not on taste: oppia (9%), CircuitVerse (3%, AI prohibited), django (19%),
 scikit-learn (20%), pandas (24%), zulip (21%), RocketChat (17%), openmrs-core (14%),
@@ -120,8 +127,9 @@ wording is read and accepted.
 | OpenRefine | none found | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy | **ADDED** |
 | scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
 | pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| joplin | none found | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| astropy | none found | probe: bug 100, no CLA | not added yet (start with four) |
+| joplin | unsolicited PRs closed without review | #16803; maintainer closed PR #17102 with it on 2026-11-14 | **do not touch** |
+| astropy | PR template requires "I certify that I am human" | `.github/PULL_REQUEST_TEMPLATE.md` (read 2026-11-16) | **do not touch** |
+| apache/amoro | no AI policy found; claim with a literal `take` comment | #4455 submitted 2026-11-16 as PR #4507; 67% outside merge rate | **WORKS** |
 | sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
 | scipy | none found | probe: gfi 3 only | low yield |
