@@ -135,26 +135,26 @@ wording is read and accepted.
 | oppia | CLA + approved approach + assignment | no recorded CLA for this account | blocked until CLA |
 | CircuitVerse | AI contributions prohibited | `AGENTS.md`: "Never create a PR" | **do not touch** |
 | processing / p5.js | AI contributions restricted | policy: no fully AI-generated work; converse first | **do not touch** |
-| sugarlabs | maintainer assignment required before starting | README process. 2026-11-16 maintainer-filed singer defects #1050–#1054 are unassigned and concrete, but #1041 is still open, so no second PR in musicblocks-v4 | blocked until assigned; no second open PR |
+| sugarlabs | maintainer assignment required before starting | README process. 2026-11-16 fresh maintainer-filed singer defects #1046, #1047, #1049–#1053 are unassigned and concrete, but #1041 is still open, so no second PR in musicblocks-v4; #1054 is test-only | blocked until assigned; no second open PR |
 | xerial/sqlite-jdbc | per-repo cap; no AI policy found | open PR #1509 already fixes new #1508 (SIGSEGV in bundled `rightstr()` for a large negative length); 87% outside merge rate | **WORKS — one PR at a time** |
 | publiclab | dormant repos, stale issues | recent issues >180 days | low yield |
-| wagtail | often already has a linked PR; #75 is a product decision | #652/#658; #75: 2025-02-09 maintainer comment says the teaser-plus-summary feed is desired, and the 2026-09-30 follow-up points to the still-open upstream design proposal wagtail/wagtail#14666 | check for PR first |
+| wagtail | often already has a linked PR; #602 is stale; #75 is a product decision | #652/#658; #602 last maintainer activity 2026-03-10 and last comment 2026-04-23 (207 days by 2026-11-16); #75: 2025-02-09 maintainer comment says the teaser-plus-summary feed is desired, and the 2026-09-30 follow-up points to the still-open upstream design proposal wagtail/wagtail#14666 | check for PR first |
 | django | CLA + triage process | contributor agreement required | blocked until CLA |
 | openmrs | process-heavy; some repos are tooling | querystore#80 is `.claude/` tooling (out of scope) | selective |
 | LibreHealth | no usable repo pool | GitHub search returned HTTP 422 | skip |
-| OpenRefine | none found | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy | **ADDED** |
+| OpenRefine | none found; one open PR at a time | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy; 2026-11-16 pool 19 target-labelled but #8088 is open (cap), including real performance defects #6289/#672 | **WORKS — one PR at a time** |
 | scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
 | pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
 | joplin | unsolicited PRs closed without review | #16803; maintainer closed PR #17102 with it on 2026-11-14 | **do not touch** |
 | astropy | PR template requires "I certify that I am human" | `.github/PULL_REQUEST_TEMPLATE.md` (read 2026-11-16) | **do not touch** |
-| apache/amoro | no AI policy found; claim with a literal `take` comment | #4455 submitted 2026-11-16 as PR #4507; new #4508 (AMS default startup "Lack required property: port") is a real defect but #4507 is open and today's org slot is used; 67% outside merge rate | **WORKS — one PR at a time** |
-| neomjs/neo | claim via bot; one open curated claim | `CONTRIBUTING.md` "Claim before you start" (read 2026-11-16); #21016 covered by PR #21015; #20747 held for #20751; #20780 claim extended by `neo-opus-vega` to 2026-11-18 23:59Z (PR #20828 closed, reopen pending; #20865 already landed the main-side metadata-only half) | **WORKS — first claim wins; core scheduling fork and #20780 are held** |
-| homarr-labs/homarr | AI-assisted PR needs running-app before/after screenshots; tests only when requested | `AGENTS.md` §AI-assisted pull requests and §Testing (read 2026-11-16) | **WORKS — high evidence cost; not usable without a fixture** |
+| apache/amoro | no AI policy found; claim with a literal `take` comment | #4455 submitted 2026-11-16 as PR #4507; #4508 (AMS default startup "Lack required property: port") now has open PR #4506, so it is not independent; today's org slot is used; 67% outside merge rate | **WORKS — one PR at a time** |
+| neomjs/neo | claim via bot; one open curated claim | `CONTRIBUTING.md` "Claim before you start" (read 2026-11-16); #21016 claim was released at 2026-11-16 04:27Z but open PR #21015 still carries the same Effect-button fix and its author was invited to claim #21016 at 04:29Z, so a second PR would duplicate it; #20747 held for #20751; #20780 claim extended by `neo-opus-vega` to 2026-11-18 23:59Z (PR #20828 closed, reopen pending; #20865 already landed the main-side metadata-only half) | **WORKS — first claim wins; #21016 is duplicate-covered; core scheduling fork and #20780 are held** |
+| homarr-labs/homarr | AI-assisted PR needs running-app before/after screenshots; tests only when requested | `AGENTS.md` §AI-assisted pull requests and §Testing (read 2026-11-16); #7390 is a real dropped-icon regression with no open PR (#7404 closed unmerged) but is blocked by that evidence gate and the tests-only rule; #7511 is an upstream adapter problem, not a clear Homarr code fix | **WORKS — high evidence cost; not usable without a fixture** |
 | sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
 | scipy | none found | probe: gfi 3 only | low yield |
 | numpy / matplotlib / networkx | none found | probe: 0 on all three labels | low yield |
-| freeCodeCamp | none found | probe 2026-11-16: 63 unassigned inspected, 8 target-labelled. The two live help-wanted defects are carried by open PRs #71601 (#71399) and #71615 (#71609); #63788/#70526 also have open PRs #63817/#71617 | low yield until those PRs close |
+| freeCodeCamp | none found | probe 2026-11-16: 63 unassigned inspected, 8 target-labelled. All four live help-wanted defects are carried by open PRs: #71601 (#71399), #71615 (#71609), #63817 (#63788) and #71617 (#70526); #70526 would also need `.github/` edits, which are out of scope | low yield until those PRs close |
 
 ## Practical consequences
 
