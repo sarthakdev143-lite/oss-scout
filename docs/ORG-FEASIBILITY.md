@@ -207,3 +207,27 @@ These are read from the repositories, not inferred from merge rates. They overri
 - **kornia/kornia — taken/held.** #6561 has PR #6570; #6533 has PR #6535; #6427 is on PR #6638;
   #6791 is reserved; #6662 is held for a review of #6666. No clean candidate.
 
+## Gate verdicts (read 2026-11-17, third cycle)
+
+- **stdlib-js/stdlib — supply taken.** #16533 (large-x `gammainc` off-by-one) is fixed by open PR
+  #16534, which changes both the JS and C implementations and adds poisson/chisquare regression
+  tests; #16655 still has PR #16660. No second accepted bug.
+- **kornia/kornia — #6662 still held.** kv-248's maintainer-acknowledged claim was followed by a
+  step-back that refers review to #6666; #6666 was closed by its author because of the earlier
+  claim. A third PR would be a competing claim. #6791 reserved; #6561/#6533/#6427 open PRs; #6792
+  needs CUDA.
+- **sugarlabs/musicblocks-v4 — cream pool, two gates.** New singer defects #1047/#1052/#1053/#1054/
+  #1046/#1049/#1050 are real wrong-output bugs with tests, but README requires maintainer
+  assignment and #1041 holds the per-repo cap. #874 is assigned and has PR #907/#1037.
+- **homarr-labs/homarr — narrow.** #7610 has PR #7613; #7590 was fixed by #7589 (v2.13.1); #7505
+  (input race) and #7390 (dropped icons) still need the AGENTS.md running-app before/after table.
+- **neomjs/neo — held.** #21008 has #21009/#21035; #20780's #20828 is closed but its claim was
+  acknowledged; #20747 is held for discussion; #21211's body says it is "specified for a maintainer
+  seat" and gets no formal review from its author.
+- **wagtail/wagtail.org — weak.** #75 is a confirmed editorial decision to keep teasers, not a
+  defect; #652 has PR #658; the rest are >180 days stale.
+- **OpenAEV-Platform/openaev — signing gate unchanged.** #9283/#9284/#9044 are real bugs but
+  CONTRIBUTING requires signed commits and the runner has no signing key.
+- **storybookjs/storybook / astropy/astropy / laurent22/joplin — policy gates unchanged.** New QA,
+  FITS and desktop-crash issues do not change the AI/unsolicited rules.
+
