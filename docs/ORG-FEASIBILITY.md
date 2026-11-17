@@ -264,7 +264,7 @@ These are read from the repositories, not inferred from merge rates. They overri
 - **kornia/kornia #6662 — usable once the claim is released.** kv-248 released the claim on
   2026-11-14 and Rahul-cs50 closed #6666 on 2026-11-12, so the issue has no assignee, no open linked
   PR, no acknowledged active claim, is not stale, and the AI policy explicitly welcomes AI use. The
-  two-week rule in CONTRIBUTING also passed its point only on 2026-11-23, so the release is what
+  two-week rule in CONTRIBUTING would not have freed it until 2026-11-23, so the release is what
   makes it free; say so on the issue before opening a PR (done:
   https://github.com/kornia/kornia/issues/6662#issuecomment-6945749599). PR #6809 submitted.
 - **kornia/kornia — agent footer rule.** Every agent-authored PR description, issue, comment and
