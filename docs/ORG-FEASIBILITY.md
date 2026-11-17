@@ -259,3 +259,29 @@ These are read from the repositories, not inferred from merge rates. They overri
 - **TabularisDB/tabularis — #1568 is a real duplicate-plugin bug** (unassigned, no linked PR), but
   today's one-per-org submission is #1597, so it waits for another day.
 
+## Gate verdicts (read 2026-11-17, fifth cycle)
+
+- **kornia/kornia #6662 — usable once the claim is released.** kv-248 released the claim on
+  2026-11-14 and Rahul-cs50 closed #6666 on 2026-11-12, so the issue has no assignee, no open linked
+  PR, no acknowledged active claim, is not stale, and the AI policy explicitly welcomes AI use. The
+  two-week rule in CONTRIBUTING also passed its point only on 2026-11-23, so the release is what
+  makes it free; say so on the issue before opening a PR (done:
+  https://github.com/kornia/kornia/issues/6662#issuecomment-6945749599). PR #6809 submitted.
+- **kornia/kornia — agent footer rule.** Every agent-authored PR description, issue, comment and
+  review must end with `Posted on behalf of @<handle> by <Agent> (<model>).` The configured
+  oss-scout disclosure line is also required to be the last line of the PR body; PR #6809 keeps the
+  kornia footer immediately above that line. If a maintainer asks for the kornia order, move the
+  footer last and explain the harness constraint in the next daily log.
+- **neomjs/neo #20780 — held until at least 2026-11-18.** The maintainer-owned WIP PR #20828 is the
+  agreed home for the work; it was closed at 07:20Z on 2026-11-15 and its author said he would
+  reopen, and the maintainer set a 2026-11-18 23:59Z deadline for that branch. Do not open a
+  competing PR while that reservation stands.
+- **career-ops-hq/career-ops #6782 — assigned.** The maintainer explicitly divided the four
+  `parseCv()` problems between AdilAzhariOmsan (1 and 2) and the first offering contributor (3 and
+  4); no outside PR.
+- **homarr-labs/homarr #7390 — evidence gate unchanged.** `AGENTS.md` requires a running-app
+  before/after screenshot table for agent-prepared PRs and discourages test-only additions; #7404
+  was closed without that evidence, so the issue is not workable in this harness.
+- **OpenAEV-Platform/openaev, OWASP/owasp-mastg, keleus/BewlyCat and the policy-blocked repos —
+  unchanged** from the earlier verdicts (signed commits, assignment bot, no test suite, AI policy).
+
