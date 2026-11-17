@@ -202,7 +202,8 @@ These are read from the repositories, not inferred from merge rates. They overri
   every agent-prepared PR and says tests only when requested. #7390 is a real regression but cannot
   be evidenced in this harness. Skip.
 - **neomjs/neo — taken/held.** #21008 has PR #21009; #20780 has PR #20828; #20747 is held for
-  discussion (#20751); #21211 has no curated target label.
+  discussion (#20751); #21211 is specified for a maintainer seat (`unowned-rationale`) and its author
+  will not review the resulting PR, so it is not an outside-contributor candidate.
 - **kornia/kornia — taken/held.** #6561 has PR #6570; #6533 has PR #6535; #6427 is on PR #6638;
   #6791 is reserved; #6662 is held for a review of #6666. No clean candidate.
 
