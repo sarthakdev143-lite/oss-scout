@@ -120,8 +120,12 @@ wording is read and accepted.
 | OpenRefine | none found | probe 2026-11-13: gfi 5, help-wanted 19, no CLA, no AI policy | **ADDED** |
 | scikit-learn | none found | probe 2026-11-13: help-wanted 100, bug 100, no CLA, no AI policy | **ADDED** |
 | pandas | none found (uses issue triage heavily) | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| joplin | none found | probe: bug 100, no CLA, no AI policy | **ADDED** |
-| astropy | none found | probe: bug 100, no CLA | not added yet (start with four) |
+| joplin | unsolicited PRs closed without review | #16803, read 2026-11-17 | **DO NOT TOUCH (autonomous)** |
+| astropy | AI policy requires the human controlling the account to interact; PR template human certification | linked AI policy + PR template, read 2026-11-17 | **DO NOT TOUCH (unattended)** |
+| wemake-services/django-modern-rest | `.github/AI_POLICY.md`: autonomous agents are not allowed; such PRs are closed | policy read 2026-11-17 | **DO NOT TOUCH (autonomous)** |
+| TabularisDB/tabularis | none found; claim on the issue first; Rust tests need Tauri system libs | CONTRIBUTING + AGENTS.md + `.rules/` read 2026-11-17 | **USABLE — #1597 submitted** |
+| kornia/kornia | AI welcome, but issue #6791 is reserved for maintainer implementation | #6791 text, read 2026-11-17 | selective; honour issue reservations |
+| homarr-labs/homarr | AI-assisted PRs need running-app before/after screenshots; tests only when requested | AGENTS.md, read 2026-11-17 | narrow |
 | sympy | AI policy in `AGENTS.md` | probe flagged it | needs a human read first |
 | beeware | AI policy in `CONTRIBUTING.md` | probe flagged it | needs a human read first |
 | scipy | none found | probe: gfi 3 only | low yield |
@@ -138,3 +142,29 @@ wording is read and accepted.
   2026-11-13 did. That standard is the difference between a real hold and a filter eating the pool.
 - If throughput must rise, the lever is **more orgs without CLA/assignment gates**, not a looser
   quality bar.
+
+## AI-policy verdicts (read 2026-11-17)
+
+These are read from the repositories, not inferred from merge rates. They override the earlier
+"none found" probes.
+
+- **wemake-services/django-modern-rest — prohibited for this workflow.** `.github/AI_POLICY.md`:
+  "We do not allow autonomous agents to be used for contributing to our projects. We will close any
+  pull requests that we believe were created autonomously." #1700 is a real crash, but no unattended
+  PR is allowed. Recommend `repos.deny`.
+- **astropy/astropy — prohibited for unattended work.** The policy linked from CONTRIBUTING says
+  autonomous workflows are not human contributors and reviewers expect to interact with the human
+  controlling the account, or the PR is closed. The PR template also requires a human certification.
+  #20880 is a real crash, but the gate is unambiguous. Recommend `repos.deny`.
+- **laurent22/joplin — prohibited for unsolicited work.** #16803: unsolicited PRs are closed without
+  review; the 2026-11-16 cycle saw this on #17102. Recommend `repos.deny`.
+- **kornia/kornia — selective.** CONTRIBUTING/AI_POLICY.md welcome AI use, but issue #6791 says it is
+  reserved for a maintainer implementation and outside PRs will be closed. Read issue-level
+  reservations before choosing a kornia bug.
+- **homarr-labs/homarr — narrow.** AGENTS.md requires a running-app before/after evidence table for
+  AI-assisted PRs and says tests should be added only when requested; #7511 was already fixed by
+  merged #7518. Not a good first-PR target for this loop.
+- **TabularisDB/tabularis — usable.** CONTRIBUTING, AGENTS.md, REVIEW.md and `.rules/` read; no AI
+  prohibition. Post a claim on the issue, use a conventional PR title, and install the Tauri system
+  libraries before running Rust tests. First submission: #1597.
+
