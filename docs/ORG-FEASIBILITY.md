@@ -231,3 +231,31 @@ These are read from the repositories, not inferred from merge rates. They overri
 - **storybookjs/storybook / astropy/astropy / laurent22/joplin — policy gates unchanged.** New QA,
   FITS and desktop-crash issues do not change the AI/unsolicited rules.
 
+## Gate verdicts (read 2026-11-17, fourth cycle)
+
+- **kornia/kornia #6662 — claim released, issue still not free.** kv-248 released the claim on
+  2026-11-14, but ducha-aiki had said #6666 would be reviewed once kv-248 stepped back, and kv-248
+  invited #6666's author to reopen it. A new PR would be a third competing claim until a maintainer
+  says the issue is free. #6791 reserved; #6561/#6533/#6427 open PRs.
+- **stdlib-js/stdlib — older `Bug` issues are all taken.** The full label query added #15595
+  (`percent-encode` drops characters / missing zero padding) with open PR #15620, #13111 (missing
+  factor 2 in the modified Huber gradient) with #15317, and #298 (Unicode-unaware padding) with
+  #15319. The remaining `Bug` issues are >180 days stale.
+- **freeCodeCamp/freeCodeCamp — curriculum bugs have open PRs.** #71609 (`React.useState` untaught
+  at Mega Navbar step 11) now has #71615/#71705; #63788 (HTML entities in the console) has
+  #63817/#71704. #70526 has three open PRs and edits `.github/` (k1 out of scope).
+- **career-ops-hq/career-ops — older core bugs need a maintainer decision.** #5663 (dangling
+  tracker references after delete/merge) and #5659 (plugin-cache data root) both record that the
+  fix needs a maintainer decision before code; #6255 has open PR #6300. #6356/#6902 are `.github/`
+  fixes (out of scope).
+- **homarr-labs/homarr — evidence gate unchanged.** #7567 now has open PR #7570; #7416 still needs
+  the AGENTS.md running-app before/after table; #7620 is translation wording, not cream.
+- **keleus/BewlyCat — no test suite.** New #1441 (Edge Auto Dark Mode conflict) is user-visible but
+  AGENTS.md forbids local test files, so the code+tests bar cannot be met.
+- **OWASP/owasp-mastg — assignment gate unchanged.** #4014 still carries `request-issue-assignment`
+  and no maintainer assignment; #4008 was closed for opening before assignment.
+- **OpenAEV-Platform/openaev — signing gate unchanged.** CONTRIBUTING requires signed commits; the
+  runner has no registered signing key. #9283/#9284/#9044 remain real but unusable.
+- **TabularisDB/tabularis — #1568 is a real duplicate-plugin bug** (unassigned, no linked PR), but
+  today's one-per-org submission is #1597, so it waits for another day.
+
