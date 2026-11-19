@@ -272,10 +272,15 @@ describe("buildFinalizePrompt", () => {
       const p = buildFinalizePrompt(ctx, "+x")
       expect(p).toContain(AI_USAGE_ANSWER)
       expect(p).toContain("AI/LLM/Copilot usage")
-      expect(p).toContain("AI assistance was used to prepare this change")
+      expect(p).toContain("If it asks whether a human wrote the change, answer \"Yes: prepared with AI assistance")
+      expect(p).toContain("reading and navigating the codebase faster")
       expect(p).toContain("the human contributor reviews and tests it before submission")
-      expect(p).toContain("Never claim it was written without AI.")
+      expect(p).toContain("Never say or imply that no human was involved, reviewed, tested or checked anything")
+      expect(p).toContain("not as \"none\", \"N/A\", a list of what the AI did, or any other form")
+      expect(p).toContain('no "Posted on behalf of ... by <tool>" line')
+      expect(p).toContain("never itemise what the AI did")
     }
+    expect(buildFinalizePrompt(pctx(), "+x")).toContain("For a section that asks what a human did")
   })
 
   test("commit guidance forbids agent-written AI trailers (added automatically)", () => {

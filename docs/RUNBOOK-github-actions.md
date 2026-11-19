@@ -11,7 +11,7 @@ from `main`, open a PR, and test it with a manual run before relying on the sche
 - `run-ops.sh`, started in tmux, looped forever: a daily window from 01:00 UTC for 300 minutes,
   at most 2 submitted PRs per day, one `opencode run` cycle at a time with a 120 s pause.
 - Model: `opencode-go/muse-spark-1.3-contributor` (OpenCode Go plan), opencode **2.0.24**, Bun.
-- Each cycle: works on branch `dev/vps-<today>`, builds the prompt from `VPS.md` + `VPS_PLAN.md`
+- Each cycle: works on branch `dev/vps-<today>`, builds the prompt from `VPS_PLAN.md`
   + the autonomy rules, runs the agent, audits every submitted PR (disclosure line, tests,
   maintainer-filed issue, docs quota), records violations, commits `docs/daily/*` and pushes the
   daily branch.

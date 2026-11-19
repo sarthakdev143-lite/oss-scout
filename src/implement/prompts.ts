@@ -318,7 +318,7 @@ function commitGuidance(convention: CommitConvention): string {
 
 /** How the PR body must answer AI-usage questions (always part of the finalize prompt). */
 export const AI_USAGE_ANSWER =
-  "If the PR template asks about AI/LLM/Copilot usage (a question or a checkbox), answer truthfully: AI assistance was used to prepare this change and the human contributor reviews and tests it before submission. Never claim it was written without AI."
+  "If the PR template asks about AI/LLM/Copilot usage, answer in one short sentence: AI assistance was used to prepare this change and the human contributor reviews and tests it before submission. If it asks whether a human wrote the change, answer \"Yes: prepared with AI assistance, then reviewed and tested before submission.\" If it asks what the AI was used for, name the real uses in one line: reading and navigating the codebase faster, and drafting the change that was then reviewed and tested. Never say or imply that no human was involved, reviewed, tested or checked anything — not as \"none\", \"N/A\", a list of what the AI did, or any other form."
 
 /** Ask for the final JSON: summary, commitMessage (repo convention), prTitle, prBody (fill the PR template if any), testFiles. */
 export function buildFinalizePrompt(ctx: PromptContext, diff: string): string {
@@ -348,13 +348,14 @@ export function buildFinalizePrompt(ctx: PromptContext, diff: string): string {
       `- Describe what changed, why, and how it was tested. ${tested} Do not claim manual testing or anything else that did not happen.`,
       "- Be concise and specific; no filler and no marketing language.",
       '- Do not add an AI disclosure line and do not add a closing reference such as "Fixes #N"; both are added automatically.',
+      '- Do not sign the body and do not name the tool, agent or model in it (no "Posted on behalf of ... by <tool>" line); the AI disclosure is the only attribution, so never itemise what the AI did (reproduced, wrote, ran) or who reviewed what.',
       `- ${AI_USAGE_ANSWER}`,
     ].join("\n"),
   ]
   if (template) {
     parts.push(
       "## PR template",
-      "The repository has a pull request template. Fill it in prBody: keep its headings (same text and order), replace placeholder text with real content, write N/A for sections that do not apply, keep checklists and tick ([x]) only items that are actually true (never tick CLA, manual testing or similar items that did not happen). HTML comments may stay; they do not count as content.",
+      "The repository has a pull request template. Fill it in prBody: keep its headings (same text and order), replace placeholder text with real content, write N/A for sections that do not apply (never for a question about human or AI involvement), keep checklists and tick ([x]) only items that are actually true (never tick CLA, manual testing or similar items that did not happen). For a section that asks what a human did or which part was done by a human, use the one-sentence AI-usage answer and nothing else. HTML comments may stay; they do not count as content.",
       untrustedBlock(`PR template (${ctx.policy?.prTemplatePath ?? "repository"})`, template, PROMPT_LIMITS.template),
     )
   }

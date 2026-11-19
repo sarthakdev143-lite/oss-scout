@@ -103,6 +103,9 @@ jobs:
           9. Open ONE pull request to $BASE_BRANCH with:
              - a title naming the fixed behaviour,
              - a body with: the defect, the failing-test evidence, the fix, and the test output,
+             - no signature line (never "Posted on behalf of ..."), no note about who reviewed or tested it, no
+               claim that no human was involved, and no description of what the AI did: the disclosure line
+               below is the only mention of AI,
              - this exact last line: Prepared with AI assistance; reviewed and tested by me.
              Use: gh pr create --repo $TARGET_REPO --base $BASE_BRANCH --title ... --body ...
           10. Print a final summary: what was wrong, the failing test output, the final test output,
