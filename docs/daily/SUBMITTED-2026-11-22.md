@@ -1,0 +1,1 @@
+- career-ops-hq/career-ops https://github.com/career-ops-hq/career-ops/pull/7607 3083031fb925c26eb316bf6d7a98c0a5a9e8cc5b code+tests https://github.com/career-ops-hq/career-ops/issues/7581 filter-audit.mjs node --test tests/filter-audit-company-filter.test.mjs
