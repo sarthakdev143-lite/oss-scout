@@ -41,7 +41,15 @@
       "homarr-labs/homarr",
       "apache/amoro",
       "layer5io/layer5",
-      "soxoj/maigret"
+      "soxoj/maigret",
+      "wemake-services/django-modern-rest",
+      "keleus/BewlyCat",
+      "TabularisDB/tabularis",
+      "storybookjs/storybook",
+      "kornia/kornia",
+      "stdlib-js/stdlib",
+      "OpenAEV-Platform/openaev",
+      "career-ops-hq/career-ops"
     ],
     "deny": []
   },
