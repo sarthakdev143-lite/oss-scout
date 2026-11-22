@@ -114,7 +114,16 @@ jobs:
       - name: Verify the model answers
         run: |
           set -euo pipefail
-          opencode run --model opencode-go/muse-spark-1.3-contributor "Reply with exactly: ok" | tail -3
+          reply=""
+          # Auto-fallback: claude sonnet 5.5 first, then the best free opencode model.
+          for model in anthropic/claude-sonnet-5-5 $(bun src/models/fallback.ts 2>/dev/null || true); do
+            if out=$(opencode run --model "$model" "Reply with exactly: ok" 2>&1 | tail -3) && [ -n "$out" ]; then
+              reply="$out"
+              break
+            fi
+          done
+          [ -n "$reply" ] || { echo "::error::no model in the chain replied"; exit 1; }
+          echo "$reply"
 
       - name: Doctor
         run: |

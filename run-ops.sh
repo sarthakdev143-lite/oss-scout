@@ -51,7 +51,7 @@ MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-2}
 RUN_MINUTES=${RUN_MINUTES:-120}   # 2h/day fits the Codespaces free quota; CI runs one window then exits
 RUN_ONCE=${RUN_ONCE:-0}           # 1 = exit when the window ends or the quota is met (GitHub Actions)
 FORCE_WINDOW=${FORCE_WINDOW:-0}   # 1 = treat process start as the window start
-MODEL="${MODEL:-opencode-go/deepseek-v4.1-flash#max}"
+MODEL="${MODEL:-anthropic/claude-sonnet-5-5}"
 
 # GitHub's scheduler is routinely late (observed: 6.5h). A wall-clock window would therefore be
 # already over when the job finally starts, so a single-run job always opens its own window.
@@ -60,6 +60,19 @@ if [ "$RUN_ONCE" = "1" ]; then
 fi
 LOG="docs/daily-24-7.log"
 mkdir -p docs/daily "$STATE_DIR"
+
+# Auto-fallback: when the primary model does not reply, use the best free opencode model.
+if ! opencode run --model "$MODEL" "Reply with exactly: ok" >/dev/null 2>&1; then
+  _fb=$(opencode models 2>/dev/null | awk '/^opencode\/[^/]+-free$/ {print; exit}')
+  if [ -z "$_fb" ]; then
+    _fb=$(opencode models 2>/dev/null | awk '/^opencode\/[^/]+$/ {print; exit}')
+  fi
+  if [ -n "$_fb" ] && [ "$_fb" != "$MODEL" ]; then
+    echo "[$(date -u +%FT%TZ)] ops: primary model ($MODEL) did not reply; falling back to $_fb" >> "$LOG"
+    MODEL="$_fb"
+  fi
+fi
+unset _fb
 
 # Snapshot the brief BEFORE any branch switch: the daily branch can be older than main, and the
 # agent must always receive the current rules, not whatever a stale branch still contains.

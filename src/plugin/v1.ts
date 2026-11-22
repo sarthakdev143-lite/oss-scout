@@ -10,6 +10,7 @@ import { z } from "zod"
 import { createApp, type App } from "../app.ts"
 import type { LoadedConfig } from "../config/load.ts"
 import { ConfigError } from "../config/schema.ts"
+import { withAutoFallback } from "../models/fallback.ts"
 import { errorMessage, type Logger } from "../util/log.ts"
 import { redact } from "../util/redact.ts"
 import { createV1LlmHost } from "./llm-v1.ts"
@@ -110,7 +111,7 @@ export function createServerV1(appOptions: EntryAppOptions = {}): V1Plugin {
         directory,
         pluginOptions: options ?? null,
         loaded,
-        llm: (log) => createV1LlmHost(input.client, paths.stateDir, { log }),
+        llm: (log) => withAutoFallback(createV1LlmHost(input.client, paths.stateDir, { log }), log),
       })
     } catch (err) {
       logSetupFailure(err)

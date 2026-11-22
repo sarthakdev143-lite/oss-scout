@@ -11,6 +11,7 @@ import { z } from "zod"
 import { createApp, loadPluginConfig, type App, type CreateAppOptions } from "../app.ts"
 import type { LoadedConfig } from "../config/load.ts"
 import { ConfigError, type OssScoutConfig } from "../config/schema.ts"
+import { withAutoFallback } from "../models/fallback.ts"
 import { errorMessage, type Logger } from "../util/log.ts"
 import { resolvePaths, type Paths } from "../util/paths.ts"
 import { redact } from "../util/redact.ts"
@@ -390,7 +391,7 @@ export async function setupV2With(pctx: Plugin.Context, appOptions: EntryAppOpti
       directory,
       pluginOptions: pctx.options,
       loaded,
-      llm: (log) => createV2LlmHost(pctx, { log }),
+      llm: (log) => withAutoFallback(createV2LlmHost(pctx, { log }), log),
     })
   } catch (err) {
     return failed(err)
