@@ -344,6 +344,8 @@ export const LoggingSchema = z
 export const ConfigSchema = z.object({
   $schema: z.string().optional(),
   mode: z.enum(["dry-run", "queue", "off"]).default("dry-run"),
+  /** Auto-approve pending queue items in the daemon tick: approve (and submit, in queue mode) without waiting for /oss-approve. */
+  autoApprove: z.boolean().default(true),
   /**
    * Where state (SQLite DB, workspaces, logs, queue files, kill switch) lives.
    * Default: ~/.oss-scout. Should NOT be inside a git repository.

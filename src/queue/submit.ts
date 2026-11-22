@@ -74,7 +74,7 @@ class SubmitFailure extends Error {
   }
 }
 
-type Via = "cli" | "command"
+type Via = "cli" | "command" | "auto"
 
 /** The exact reviewed commit a pr/fix item pushes (data.commitSha, a full sha), or null. */
 export function pushCommitOf(item: Pick<QueueItem, "data">): string | null {
@@ -116,17 +116,19 @@ export async function approveQueueItemWith(
   const d: SubmitDeps = { ...defaultSubmitDeps, ...deps }
   const queue = new ApprovalQueue(ctx)
   const via = String(input.via)
+  const actor = via === "auto" ? "auto" : "human"
 
   const item = ctx.store.getQueueItem(input.id)
   if (!item) return { ok: false, status: "failed", message: `queue item ${input.id} not found`, url: null, actions: [] }
 
   const refuse = (message: string, status: QueueStatus = item.status): ApprovalResult => {
-    audit(ctx, "human", "queue.approve", `queue:${item.id}`, "refused", [message], { via, mode: ctx.config.mode })
+    audit(ctx, actor, "queue.approve", `queue:${item.id}`, "refused", [message], { via, mode: ctx.config.mode })
     return { ok: false, status, message, url: null, actions: [] }
   }
 
-  // Approval is a human act: only the CLI and the slash command may call this (never an LLM tool).
-  if (via !== "cli" && via !== "command") return refuse(`approval via "${via}" is not allowed; use /oss-approve or the CLI`)
+  // Approval is a human act: only the CLI and the slash command may call this (never an LLM tool),
+  // plus "auto" when the daemon runs with config autoApprove (the user asked for it).
+  if (via !== "cli" && via !== "command" && via !== "auto") return refuse(`approval via "${via}" is not allowed; use /oss-approve or the CLI`)
 
   // An "approved" (queue-mode) item whose submission is no longer running anywhere was interrupted
   // (crash/restart mid-submission). Re-approving resumes it; every step is idempotent (fork reuse,
@@ -275,7 +277,7 @@ export async function approveQueueItemWith(
       itemStatus: current.status,
       itemDigest: current.digest,
       providedDigest: provided,
-      actor: "human",
+      actor: actor,
       via: input.via,
       mode: ctx.config.mode,
       now,

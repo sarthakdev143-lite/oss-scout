@@ -4,6 +4,7 @@ import type { Millis, TaskRecord } from "../core/types.ts"
 import { runDiscovery } from "../discovery/discover.ts"
 import { runExternalPrSync, runFollowup } from "../followup/followup.ts"
 import { ApprovalQueue, isInterruptedSubmission, isOpenForDecision, issueIdOf } from "../queue/queue.ts"
+import { approveQueueItemWith } from "../queue/submit.ts"
 import { runScreening } from "../screening/screen.ts"
 import { selectNextIssue } from "../selection/issues.ts"
 import { DAY, HOUR, MINUTE } from "../util/clock.ts"
@@ -438,7 +439,21 @@ export class Scheduler {
         })
     }
 
-    // 2. discovery
+    // 2. auto-approve pending queue items when enabled (approve + submit in queue mode)
+    if (ctx.config.autoApprove) {
+      await github("autoApprove", async () => {
+        const items = ctx.store.listQueue({ status: ["pending"] }).filter(isOpenForDecision)
+        let n = 0
+        for (const item of items) {
+          const result = await approveQueueItemWith(ctx, { id: item.id, digest: item.digest, via: "auto" })
+          if (result.ok) n++
+          else ctx.log.warn("auto-approve refused", { id: item.id, status: item.status, message: result.message })
+        }
+        return `auto-approved and submitted ${n} of ${items.length} pending item(s)`
+      })
+    }
+
+    // 3. discovery
     const discoveryDue = this.discoveryDue(now, force)
     if (discoveryDue !== null) push("discovery", true, discoveryDue)
     else
@@ -454,17 +469,17 @@ export class Scheduler {
         return `${r.added.length} added, ${r.existing} already known, ${r.skipped.length} skipped, ${r.errors.length} error(s)`
       })
 
-    // 3. screening
+    // 4. screening
     await github("screening", async () => {
       const r = await d.runScreening(ctx)
       const eligible = r.screened.filter((x) => x.status === "eligible").length
       return `screened ${r.screened.length} repo(s) (${eligible} eligible); ${r.errors.length} error(s)`
     })
 
-    // 4. advance due tasks (one stage each, sequentially); runs even while GitHub is paused
+    // 5. advance due tasks (one stage each, sequentially); runs even while GitHub is paused
     await this.advanceDueTasks(now, push, checkpoint, signal)
 
-    // 5. housekeeping (no GitHub): queue items whose repo became off-limits; daily pruning
+    // 6. housekeeping (no GitHub): queue items whose repo became off-limits; daily pruning
     checkpoint("maintenance")
     try {
       push("maintenance", true, this.maintenance(ctx.clock.now()))
@@ -472,7 +487,7 @@ export class Scheduler {
       this.stepError("maintenance", err, push)
     }
 
-    // 6. select + start new work
+    // 7. select + start new work
     if (!ctx.llm) {
       push("selection", true, "skipped: no LLM host (new work starts only inside opencode)")
       return

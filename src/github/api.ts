@@ -82,7 +82,7 @@ export interface WriteAuthorization {
   readonly queueItemId: number
   readonly digest: string
   readonly approvedAt: number
-  readonly via: "cli" | "command"
+  readonly via: "cli" | "command" | "auto"
 }
 
 export function mintWriteAuthorization(input: {
@@ -90,12 +90,12 @@ export function mintWriteAuthorization(input: {
   itemStatus: string
   itemDigest: string
   providedDigest: string
-  actor: "human"
-  via: "cli" | "command"
+  actor: "human" | "auto"
+  via: "cli" | "command" | "auto"
   mode: string
   now: number
 }): WriteAuthorization {
-  if (input.actor !== "human") throw new WriteForbiddenError("only a human can approve GitHub writes")
+  if (input.actor !== "human" && input.actor !== "auto") throw new WriteForbiddenError("only a human or auto approval can approve GitHub writes")
   if (input.mode !== "queue") throw new WriteForbiddenError(`GitHub writes are disabled in mode "${input.mode}"`)
   if (input.itemStatus !== "approved") throw new WriteForbiddenError(`queue item ${input.queueItemId} is not approved`)
   const provided = input.providedDigest.trim().toLowerCase()

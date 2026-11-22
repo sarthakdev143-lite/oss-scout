@@ -384,7 +384,7 @@ export interface TrackedPr {
 // Audit
 // ---------------------------------------------------------------------------
 
-export type AuditActor = "scout" | "human" | "critic" | "system"
+export type AuditActor = "scout" | "human" | "auto" | "critic" | "system"
 
 export interface AuditEntry {
   id: number
