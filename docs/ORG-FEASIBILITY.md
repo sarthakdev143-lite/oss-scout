@@ -163,3 +163,9 @@ wording is read and accepted.
 Operational note: the Search API has a 30 requests/minute limit and a secondary limit. Build pools with
 `repos/OWNER/REPO/issues?labels=...&assignee=none` (core quota) and pace the calls; a 96-call search burst
 on 2026-11-22 tripped both limits.
+
+## Note 2026-11-23: xerial/sqlite-jdbc native fixes
+
+Fixes to `src/main/ext/*.c` cannot go green in CI on their own: test jobs use the prebuilt libs committed under `src/main/resources/org/sqlite/native`, which only the manual
+**Build Native** workflow regenerates. The maintainer (gotson) accepts this: #1489 was merged with red CI after a native rebuild, and #1509 was approved on 2026-11-23 in the same state.
+A red `ExtensionTest` on such a PR is expected; say so in the PR body and let the maintainer rebuild. Do not weaken the test.
