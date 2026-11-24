@@ -127,6 +127,10 @@ wording is read and accepted.
 | scipy | none found | probe: gfi 3 only | low yield |
 | numpy / matplotlib / networkx | none found | probe: 0 on all three labels | low yield |
 | freeCodeCamp | none found | probe: help-wanted 8 | low yield |
+| astropy | AI policy: autonomous agents are not human contributors, PR closed | astropy-project/policies/ai-policy.md, read 2026-11-24 | **do not touch** |
+| kolibri (Learning Equality) | PR only after assignment; AI-looking PRs not answered | learningequality.org/contributing-to-our-open-code-base, read 2026-11-24 | blocked until assigned |
+| OpenCTI | signed commits required; tests need full ES/Redis/RabbitMQ stack | CONTRIBUTING.md, read 2026-11-24 | not feasible in sandbox |
+| floci | none found; AGENTS.md addresses agents; max 2 open PRs per author; CI rejects AI Co-Authored-By trailers | PR floci-io/floci#9349 submitted 2026-11-24 | **WORKS** (heavy: needs MAVEN_OPTS=-Xmx2500m, 8g container) |
 
 ## Practical consequences
 

@@ -1,0 +1,1 @@
+- floci-io/floci https://github.com/floci-io/floci/pull/9349 b290ee011fc52140edc3af6cda20ec02b8fdb9ec code+tests https://github.com/floci-io/floci/issues/9246 src/main/java/io/floci/aws/services/s3/S3Service.java MAVEN_OPTS=-Xmx2500m mvn -B -Dtest=S3DefaultEncryptionServiceTest,S3EncryptionIntegrationTest -Dsurefire.failIfNoSpecifiedTests=false test
