@@ -131,6 +131,10 @@ wording is read and accepted.
 | kolibri (Learning Equality) | PR only after assignment; AI-looking PRs not answered | learningequality.org/contributing-to-our-open-code-base, read 2026-11-24 | blocked until assigned |
 | OpenCTI | signed commits required; tests need full ES/Redis/RabbitMQ stack | CONTRIBUTING.md, read 2026-11-24 | not feasible in sandbox |
 | floci | none found; AGENTS.md addresses agents; max 2 open PRs per author; CI rejects AI Co-Authored-By trailers | PR floci-io/floci#9349 submitted 2026-11-24 | **WORKS** (heavy: needs MAVEN_OPTS=-Xmx2500m, 8g container) |
+| kornia | CONTRIBUTING "Working with AI": every agent-authored PR description, comment and review must end with `Posted on behalf of @<handle> by <Agent> (<model>).`, and the PR template's "Which part was done by a human" section must state the real human contribution (a maintainer wrote that "merely requesting the task ... can mean zero substantive human technical contribution"). Both conflict with the disclosure rules (disclosure line only, no signature) | kornia/kornia CONTRIBUTING.md and PR #6809 review by ducha-aiki, read 2026-11-24; repo is also not in repos.allow | **do not submit**; #6809 held, see daily log |
+| neomjs/neo | PR body must carry `Authored by @<handle> (<model + version>, reasoning: <effort>, <harness>)`; the repo also materializes `.agents/` and `.claude/` skills at install | CONTRIBUTING.md and PULL_REQUEST_TEMPLATE.md, read 2026-11-24 | not usable under the disclosure rules |
+| homarr | AGENTS.md requires running-app before/after captures for AI PRs | recorded in the 2026-11-24 daily log | not attempted |
+| zilla (aklivity) | none found: no CLA or assignment text, AGENTS.md is written for agents; test-first with k3po `.rpt` scripts, a spec IT plus a runtime IT per scenario; conventional commits, PRs against `develop` | AGENTS.md, .github/CONTRIBUTING.md, read 2026-11-24 | usable; heavy Maven build (8g container, `-Dskip.checks=true` for ITs) |
 
 ## Practical consequences
 
