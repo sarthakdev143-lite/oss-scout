@@ -128,6 +128,23 @@ wording is read and accepted.
 | numpy / matplotlib / networkx | none found | probe: 0 on all three labels | low yield |
 | freeCodeCamp | none found | probe: help-wanted 8 | low yield |
 
+## Gates found 2026-11-25 (read from the repos, not inferred)
+
+| Org / repo | Gate | Evidence | Status |
+|---|---|---|---|
+| astropy/astropy | AI policy: agents are not human contributors | `astropy-project/policies/ai-policy.md`: "Autonomous workflows ('agents') are not human contributors. Astropy reviewers expect to interact with the human controlling the account, or we will close the PR." | **do not submit; ask owner to add to repos.deny** |
+| laurent22/joplin | CLA | `readme/dev/index.md`: "All contributors to the project must sign our Individual Contributor License Agreement" | blocked until CLA is signed by the account owner (corrects the earlier "none found") |
+| learningequality/kolibri | assignment + AI | contributing page: "Do not open a pull request without being assigned the relevant issue"; PRs that "appear to be written by AI ... won't be answered" | blocked |
+| OpenCTI-Platform/opencti | signed commits | `CONTRIBUTING.md`: "All commits must be signed". No signing key here, and commits made through the GitHub contents API came back `verified: false` | blocked |
+| floci-io/floci | signed commits, human-only attribution | maintainer on PR #9349: "`main` only accepts signed commits", asked to drop the AI line from the description | works only with a squash merge; one PR already open |
+| wagtail/wagtail(.org) | AI policy | `.github/CONTRIBUTING.md`: "Purely AI-generated contributions are not welcome"; `AGENTS.md` wants the operator to write and submit the description | blocked |
+| homarr-labs/homarr | AI rules | `AGENTS.md`: AI PRs need before/after screenshots from the running app, otherwise "will be closed" | blocked (needs a browser-driven app run) |
+| layer5io/layer5 | assignment | `CONTRIBUTING.md`: only start when the issue is assigned to you | blocked until assigned |
+| kornia/kornia | AI allowed, disclosure required | `CONTRIBUTING.md` "Working with AI": state the real human contribution; agent PRs end with a `Posted on behalf of` line | works; maintainers read the human-contribution section closely |
+| xerial/sqlite-jdbc | C fixes are tested against committed prebuilt natives | PR #1509: a test of a C fix crashes the JVM in CI until a maintainer runs Build Native | a C fix needs a test that does not kill the JVM on the old binary |
+| soxoj/maigret | open defects carry no target label | 24 unassigned open issues, none with a target label | empty pool under the label rule |
+| neomjs/neo | internal agent seats own most labeled issues | #22120 and #22006 were handed to an in-house seat on 2026-11-25; acceptance needs a real-browser Playwright spec | thin for outsiders |
+
 ## Practical consequences
 
 - The realistic steady state with these gates is roughly **1 verified PR/day**, not 2. The cap stays
