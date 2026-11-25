@@ -136,7 +136,7 @@ wording is read and accepted.
 | laurent22/joplin | CLA | `readme/dev/index.md`: "All contributors to the project must sign our Individual Contributor License Agreement" | blocked until CLA is signed by the account owner (corrects the earlier "none found") |
 | learningequality/kolibri | assignment + AI | contributing page: "Do not open a pull request without being assigned the relevant issue"; PRs that "appear to be written by AI ... won't be answered" | blocked |
 | OpenCTI-Platform/opencti | signed commits | `CONTRIBUTING.md`: "All commits must be signed". No signing key here, and commits made through the GitHub contents API came back `verified: false` | blocked |
-| floci-io/floci | signed commits, human-only attribution | maintainer on PR #9349: "`main` only accepts signed commits", asked to drop the AI line from the description | works only with a squash merge; one PR already open |
+| floci-io/floci | signed commits, human-only attribution | maintainer on PR #9349: "`main` only accepts signed commits", asked to drop the AI line from the description | PR #9349 closed unmerged 2026-11-25: maintainer said unsigned commits cannot be merged. **blocked until a commit-signing key exists** |
 | wagtail/wagtail(.org) | AI policy | `.github/CONTRIBUTING.md`: "Purely AI-generated contributions are not welcome"; `AGENTS.md` wants the operator to write and submit the description | blocked |
 | homarr-labs/homarr | AI rules | `AGENTS.md`: AI PRs need before/after screenshots from the running app, otherwise "will be closed" | blocked (needs a browser-driven app run) |
 | layer5io/layer5 | assignment | `CONTRIBUTING.md`: only start when the issue is assigned to you | blocked until assigned |
