@@ -144,6 +144,7 @@ wording is read and accepted.
 | xerial/sqlite-jdbc | C fixes are tested against committed prebuilt natives | PR #1509: a test of a C fix crashes the JVM in CI until a maintainer runs Build Native | a C fix needs a test that does not kill the JVM on the old binary |
 | soxoj/maigret | open defects carry no target label | 24 unassigned open issues, none with a target label | empty pool under the label rule |
 | neomjs/neo | internal agent seats own most labeled issues | #22120 and #22006 were handed to an in-house seat on 2026-11-25; acceptance needs a real-browser Playwright spec | thin for outsiders |
+| neomjs/neo (AI format) | PR template and `pr-baseline` expect an `Authored by @handle (model + version, reasoning, harness)` line; claim by comment first | `CONTRIBUTING.md` section 5 and `.github/PULL_REQUEST_TEMPLATE.md`. This conflicts with autonomy rule 4 (disclosure line is the only AI mention, no model signature). #22194 (Responsive body classes) is a real defect, but its AC-1 needs a real-browser e2e on system Chrome and the issue rules out a stubbed unit test | blocked: cannot meet the required format and rule 4 together; owner decision needed |
 
 ## Practical consequences
 
