@@ -14,11 +14,11 @@ on:
       run_minutes:
         description: "Window length in minutes"
         type: string
-        default: "120"
+        default: "240"
       max_submits:
         description: "Max PRs this run"
         type: string
-        default: "2"
+        default: "4"
 
 concurrency:
   group: oss-scout-daily
@@ -141,8 +141,8 @@ jobs:
         env:
           RUN_ONCE: "1"
           FORCE_WINDOW: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
-          RUN_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.run_minutes || '120' }}
-          MAX_SUBMITS_PER_DAY: ${{ github.event_name == 'workflow_dispatch' && inputs.max_submits || '2' }}
+          RUN_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.run_minutes || '240' }}
+          MAX_SUBMITS_PER_DAY: ${{ github.event_name == 'workflow_dispatch' && inputs.max_submits || '4' }}
           OSS_SCOUT_STATE_DIR: ${{ github.workspace }}/../.oss-scout
           VERIFIER_PATH: ${{ runner.temp }}/verify-claim.sh
         run: |
@@ -198,3 +198,32 @@ jobs:
             ~/.oss-scout/logs/
           if-no-files-found: ignore
           retention-days: 14
+
+  update-showcase:
+    needs: cycle
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Update merged PRs showcase
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SCOUT_WRITE_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 ops/update-merged-prs.py --only-if-prs-changed
+      - name: Commit updated showcase
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- MERGED-PRS.md; then
+            echo "MERGED-PRS.md unchanged"
+            exit 0
+          fi
+          git config user.name "sarthakdev143-lite"
+          git config user.email "sarthakdev143.official@gmail.com"
+          git add MERGED-PRS.md
+          git commit -m "docs: update MERGED-PRS.md showcase"
+          git push

@@ -12,3 +12,19 @@ jenkinsci/jenkins
 
 # Large corporate projects where an outside fix needs a CLA or an internal design sign-off.
 rstudio/rstudio
+
+# AI policy prohibits or rejects autonomous/unattended agent PRs.
+astropy/astropy
+wagtail/wagtail.org
+beeware/briefcase
+CircuitVerse/CircuitVerse
+processing/p5.js
+wemake-services/django-modern-rest
+learningequality/kolibri
+
+# CLA required or closes unsolicited PRs without review.
+laurent22/joplin
+
+# Tooling/runner blockers (GPG commit signing or live-app browser screenshots required).
+homarr-labs/homarr
+OpenCTI-Platform/opencti

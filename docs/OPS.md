@@ -12,16 +12,19 @@ The 8x VPS is gone. The contributor loop now runs on GitHub Actions, free for th
 - **A run opens its own window from when the job actually starts.** GitHub's scheduler is late in
   practice (observed 6.5h), so a wall-clock window would already be closed and the job would do
   nothing while reporting success. `RUN_ONCE=1` implies `FORCE_WINDOW=1`.
-- Window length 120 min by default; the loop exits early when the daily PR quota (2) is met.
+- Window length 240 min by default; the loop exits early when the daily PR quota (4) is met.
 
 ## What one cycle does
 
 0. Read `docs/ORG-FEASIBILITY.md` (known per-repo gates) and, for a repo it has never contributed to,
    read that repo's AI policy first. A repo that forbids unsolicited autonomous-agent PRs is skipped.
-1. Pick an org by rotation (least recently submitted).
-2. Build a candidate pool: up to 100 open, unassigned issues per org carrying a target label.
+1. Check PR follow-ups first, then check issues already assigned to `sarthakdev143-lite` in allow-listed
+   repos (priority queue for assignment-gated repos). Otherwise pick an org by rotation (least recently
+   submitted).
+2. Build a candidate pool: up to 100 open, unassigned issues per org carrying a target label (pinned OWASP/* repos may also include unlabeled open, unassigned maintainer-filed issues).
 3. Reject only on five provable blockers: assigned, linked PR, acknowledged claim, 180-day stale,
-   AI policy restricts. "Looks contested" is not a blocker.
+   AI policy restricts. "Looks contested" is not a blocker. For assignment-gated repos with no AI ban or CLA
+   (`s2b`), post one root-cause + fix plan comment requesting assignment instead of opening an unassigned PR.
 4. Implement in a clean workspace, failing test first, minimal diff.
 5. Gates: verification, critic (0.85), security.
 6. Submit: fork, push, PR with the disclosure line.
@@ -30,9 +33,10 @@ The 8x VPS is gone. The contributor loop now runs on GitHub Actions, free for th
 ## How the target set is chosen
 
 `ops/repo-scout.py` ranks repos by the share of **outside contributors'** PRs that merged in the last
-90 days, joined with live labeled-issue supply. Repos enter the allow-list only with **merge rate ≥40%**
-and **≥5 labeled issues**, and discovery additionally requires **≥1000 stars** so the list cannot fill
-with unknown projects.
+90 days, joined with live labeled-issue supply. In `--discover` mode it scans both curated GSoC
+organizations (`ops/gsoc-orgs.txt`, `>=100` stars, `>=35%` merge rate) and general GitHub repos
+(`>=1000` stars, `>=40%` merge rate), filtering out CLA-gated and AI-banned repos and capping the
+allow-list at `--max-total 45` (pinned repos + balanced GSoC and general OSS discoveries).
 
 - `ops/pinned-repos.txt` is always kept, whatever the ranking says.
 - `repo-scout` runs **every Monday 05:00 UTC**, refreshes the allow-list, and commits the change.
@@ -114,3 +118,9 @@ Per-run: cancel from the Actions tab. Nothing else is scheduled.
 - AI policies vary by project and some forbid exactly this workflow (BeeWare: "no unsolicited PRs from
   autonomous tools"; CircuitVerse: "never create a PR"). A repo's merge rate never overrides its policy.
 - Success is merge rate, not PR count.
+
+## Merged PRs showcase
+
+`MERGED-PRS.md` is automatically maintained by `ops/update-merged-prs.py` via the `update-showcase` job
+in `.github/workflows/daily-ops.yml`, listing all merged external PRs (GSoC and general OSS) with
+organization highlights and diff metrics.

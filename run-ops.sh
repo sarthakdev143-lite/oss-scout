@@ -1,6 +1,6 @@
 #!/bin/bash
 # Autonomous daily contributor loop. Works on a VPS or in a GitHub Codespace.
-# Fixed start 01:00 UTC (06:30 IST). Up to 2 auto-submitted PRs/day, then sleep.
+# Fixed start 01:00 UTC (06:30 IST). Up to 4 auto-submitted PRs/day, then sleep.
 set -u
 
 # ---- workspace + state (GitHub Actions, Codespace, or plain box) ----
@@ -47,8 +47,8 @@ fi
 # Overridable so one script serves a box, a codespace, and a single-run CI job.
 START_HOUR_UTC=${START_HOUR_UTC:-1}
 START_MIN_UTC=${START_MIN_UTC:-0}
-MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-2}
-RUN_MINUTES=${RUN_MINUTES:-120}   # 2h/day fits the Codespaces free quota; CI runs one window then exits
+MAX_SUBMITS_PER_DAY=${MAX_SUBMITS_PER_DAY:-4}
+RUN_MINUTES=${RUN_MINUTES:-240}   # 4h/day CI window; exits early once daily quota is met
 RUN_ONCE=${RUN_ONCE:-0}           # 1 = exit when the window ends or the quota is met (GitHub Actions)
 FORCE_WINDOW=${FORCE_WINDOW:-0}   # 1 = treat process start as the window start
 MODEL="${MODEL:-anthropic/claude-sonnet-5-5}"
@@ -165,7 +165,7 @@ while true; do
     echo "ENVIRONMENT: $( [ "$IN_CODESPACE" = 1 ] && echo 'GitHub Codespace. Use OSS_SCOUT_GITHUB_TOKEN for reads and GH_TOKEN (write token) for gh CLI fork/push/PR. Never use the codespace GITHUB_TOKEN for upstream work.' || echo 'VPS box.')"
     echo "AUTONOMY RULES (no human will review; you are the approver, act conservatively):"
     echo "QUALITY BAR (GSoC-grade, enforced):"
-    echo "a) NEVER file your own issues on allow-listed orgs. Work ONLY maintainer-filed issues carrying target labels (good first issue, help wanted, bug, confirmed, documentation, tests). No eligible labeled issue in an org = skip that org, log why, never invent work."
+    echo "a) NEVER file your own issues on allow-listed orgs. Work ONLY maintainer-filed issues carrying target labels (good first issue, help wanted, bug, confirmed, documentation, tests) - exception: for pinned OWASP/* repos, open unassigned maintainer-filed issues without target labels are also eligible. No eligible issue in an org = skip that org, log why, never invent work."
     echo "b) Docs-only PRs: max 1 per week across ALL orgs. The daily staple is code: bug fixes (failing test first) or small features."
     echo "c) Every code change must add or extend tests proving the fix; run the full relevant suite in the docker sandbox before and after."
     echo "d) First PR per org: keep it small and visibly follow that repo's CONTRIBUTING/PR template."
@@ -177,12 +177,21 @@ while true; do
     echo "     contributions (BeeWare and CircuitVerse both do), do not submit: record the gate and ask the owner to add"
     echo "     the repo to repos.deny. Being right about the bug does not excuse ignoring the policy."
     echo "s1) Pool: per org, query UP TO 100 open unassigned issues carrying a target label (good first issue, help wanted,"
-    echo "    bug, confirmed, tests, documentation). Do not look only at the newest handful; build the pool, then choose."
+    echo "    bug, confirmed, tests, documentation); for pinned OWASP/* repos, also include open unassigned issues without"
+    echo "    those labels. Do not look only at the newest handful; build the pool, then choose."
     echo "s2) Blockers are ONLY these, each provable from the issue page: assigned to someone; linked to an open PR; a"
     echo "    commenter claimed it and a maintainer acknowledged or it shows a work-in-progress PR; stale with no maintainer"
     echo "    activity in 180 days; the repo's AI policy prohibits AI contributions or is unclear-and-restrictive."
     echo "    'Many people commented', 'looks contested', 'I am not sure' are NOT blockers. If none of the five blockers is"
     echo "    provable, the issue is ELIGIBLE."
+    echo "s2b) ASSIGNMENT-GATED REPOS (no AI ban, no CLA - e.g. OWASP/Nest, OWASP/owasp-mastg, layer5io/layer5,"
+    echo "     sugarlabs/musicblocks-v4): NEVER open an unassigned PR. Instead, if we have no open PR, no issue already"
+    echo "     assigned to sarthakdev143-lite, and no unanswered assignment request from us in that repo within 14 days:"
+    echo "     pick ONE unblocked cream defect, inspect the code first to confirm we can genuinely fix and test it within"
+    echo "     these limits, and post ONE concise gh issue comment summarizing the root cause / planned fix and politely"
+    echo "     asking to be assigned. Cap at 4 new assignment requests per day across all repos (max 1 pending per repo)."
+    echo "     Never request assignment on repos whose AI policy prohibits/restricts autonomous contributions. Log each"
+    echo "     request in docs/daily/$TODAY.md."
     echo "s3) Rank eligible issues: prefer (a) small blast radius, (b) reproducible defect over feature, (c) file count the"
     echo "    repo's tests can cover, (d) maintainer-filed. Take the top one."
     echo "s3b) CREAM ONLY. Submit nothing rather than something thin. Cream = a real defect a user would feel: wrong output,"
@@ -202,9 +211,9 @@ while true; do
     echo "k3) Never work in a scratch directory belonging to an earlier cycle. Clone fresh under /tmp/<repo>-<date>."
     echo "k4) If the honest answer is that the issue is not fixable within these limits, submit nothing and say why."
     echo "1. Work only repos under repos.allow in $STATE_DIR/oss-scout.config.json. Never touch main directly."
-    echo "2. Do the pipeline YOURSELF (the local scheduler has no LLM host, so ticks alone never start work; you are the worker): (a) check caps via status + today's SUBMITTED file, stop if quota met; (b) rotation: pick the next allow-listed org with no submission in the last 2 days; (c) run one scheduler tick for follow-ups only; (d) find ONE maintainer-filed issue with target labels via gh (verify labels, recent maintainer activity, CI, AI policy); none eligible = log the reason in docs/daily/$TODAY.md and end the cycle with zero submissions; (e) implement in a clean /tmp workspace + docker sandbox (baseline first, failing test first for bugs, minimal diff); (f) verify gate + critic self-review at 0.85 + strict security pass; one issue per cycle max."
+    echo "2. Do the pipeline YOURSELF (the local scheduler has no LLM host, so ticks alone never start work; you are the worker): (a) check caps via status + today's SUBMITTED file, stop if quota met; (b) rotation: pick the next allow-listed repo with no submission today (respecting the 1-day per-repo cooldown); (c) run one scheduler tick for follow-ups only; (d) find ONE maintainer-filed issue with target labels via gh (or unlabeled for pinned OWASP/* repos) (verify labels, recent maintainer activity, CI, AI policy); none eligible = log the reason in docs/daily/$TODAY.md and end the cycle with zero submissions; (e) implement in a clean /tmp workspace + docker sandbox (baseline first, failing test first for bugs, minimal diff); (f) verify gate + critic self-review at 0.85 + strict security pass; one issue per cycle max."
     echo "3. Submit a PR ONLY if ALL hold: verification gate passes, critic approves, strict security review passes, repo AI policy is clear, disclosure line present, diff within limits, caps allow it."
-    echo "4. Submit with gh using the write token only: fork, push the exact reviewed commit, open PR whose body ends with disclosure.line from $STATE_DIR/oss-scout.config.json copied verbatim. That line is the only mention of AI: no other note about what the AI did or who reviewed, tested or posted it, never state or imply that no human was involved, and no tool/model signature (never 'Posted on behalf of ...'). A candidate is skipped ONLY for a provable blocker from s2 or a mandatory upstream gate (CLA, assignment, AI policy); record which one."
+    echo "4. Submit with gh using the write token only: fork, push the exact reviewed commit, open PR whose body ends with disclosure.line from $STATE_DIR/oss-scout.config.json copied verbatim. That line is the only mention of AI: no other note about what the AI did or who reviewed, tested or posted it, never state or imply that no human was involved, and no tool/model signature (never 'Posted on behalf of ...'). Exception: if the repo's CONTRIBUTING.md, AGENTS.md, or PR template explicitly requires an AI checkbox or human-involvement section (e.g. OWASP/Nest, kornia/kornia, asyncapi/generator), fill that section or checkbox truthfully in addition to disclosure.line. For DCO repos (e.g. layer5io/layer5, DependencyTrack/dependency-track), commit with git commit -s. A candidate is skipped ONLY for a provable blocker from s2 or a mandatory upstream gate (CLA, assignment, AI policy); record which one."
     echo "5. Append one line per submitted PR to docs/daily/SUBMITTED-$TODAY.md, exactly these 7 fields:"
     echo "   '- <owner/repo> <PR-URL> <digest> <code+tests|docs-only> <maintainer-issue-URL> <fixed_file> <verify_cmd>'"
     echo "   fixed_file = the source file your fix changed. verify_cmd = the exact command that proves the fix in a"
@@ -213,11 +222,16 @@ while true; do
     echo "   Never write a test result you did not obtain by running that exact command: the harness re-runs it, and a"
     echo "   mismatch closes the PR automatically."
     echo "6. Stop after $MAX_SUBMITS_PER_DAY submissions. Update docs/daily/$TODAY.md with what ran, skipped, and why."
-    echo "7. Rotate orgs across days: do not submit twice to the same org on consecutive days unless a maintainer asked for a follow-up."
-    echo "7b) Spacing: at most ONE submission per org per day, and never two open PRs in one repo (the 30-day per-repo"
+    echo "7. Spread submissions across distinct repos and orgs each day; in large multi-repo orgs (e.g. OWASP, apache, asyncapi), you may submit to different repos on consecutive days."
+    echo "7b) Spacing: at most ONE submission per repo per day, and never two open PRs in one repo (the 1-day per-repo"
     echo "    cooldown is separate and still applies). Volume comes from breadth across many repos, not from crowding one."
     echo "8. FOLLOW-UP FIRST, before any new work: every cycle, check EVERY open PR you authored for new review activity since your last check. Read maintainer comments, reviews and requested changes, AND bot code-review comments (Copilot, CodeRabbit, Sourcery, etc.), including INLINE review comments, not just top-level ones. Bot code-review feedback that asks for a change ('blocking', 'changes requested', a concrete code suggestion) is ACTIONABLE: address it, never dismiss it as bot noise. Only skip genuinely non-actionable bots (CLA assistant, welcome/greeting bots, pure coverage or status summaries). A maintainer comment that raises a concern, even a question or a risk label, must be investigated and answered. The exact commands are in step 8b of this prompt."
     echo "8b. Address actionable feedback within 24h by updating the PR: push a fix commit to the SAME branch (never force-push, never rewrite history) and/or post a specific reply; re-run the relevant tests before pushing. The inline review comments where bot reviewers post are: gh api repos/OWNER/REPO/pulls/N/comments (top-level: issues/N/comments; reviews: pulls/N/reviews). Record each follow-up (PR, what was asked, what you changed or replied) in docs/daily/$TODAY.md; if a PR needs no action, say so briefly. Responsiveness is part of the quality bar."
+    echo "8c. ASSIGNED ISSUES PRIORITY: after PR follow-ups and before general rotation, run"
+    echo "    gh search issues --assignee sarthakdev143-lite --state open --json repository,number,title,url"
+    echo "    and filter to repos in repos.allow. If any allow-listed repo has an issue already assigned to us (with no"
+    echo "    open PR from us in that repo yet and no s2 blocker), implement and submit that issue first (use git commit -s"
+    echo "    if the repo requires DCO, e.g. layer5io/layer5)."
     echo "9. First cycle of the day: read yesterday's docs/daily log and note any quality drift (nit-class PRs, weak tests, slow follow-ups); correct course before new work."
   } >> "$PROMPT_FILE"
   if [ -s "docs/daily/VIOLATION-$TODAY.md" ]; then

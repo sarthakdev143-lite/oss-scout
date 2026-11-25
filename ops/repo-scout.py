@@ -67,6 +67,19 @@ DISCOVER_SEARCHES = [
 ]
 
 
+AI_BAN_RE = re.compile(
+    r"(?i)"
+    r"do not accept unsolicited pull requests"
+    r"|no unsolicited prs? from autonomous"
+    r"|do not allow autonomous agents"
+    r"|purely ai[- ]generated contributions are not welcome"
+    r"|does not accept (?:fully )?ai[- ]generated pull requests"
+    r"|never create a pr"
+    r"|autonomous workflows[^.\n]{0,60}not human contributors"
+    r"|ai[- ]written[^.\n]{0,60}won't be answered"
+)
+
+
 def has_cla(repo: str) -> bool:
     """A CLA/DCO gate means the contribution cannot land without a legal step the owner has not
     taken. Cheaper to exclude the repo here than to discover it at submission time."""
@@ -81,6 +94,29 @@ def has_cla(repo: str) -> bool:
         if re.search(r"(?i)contributor license agreement|cla-assistant|easycla", text):
             return True
     return False
+
+
+def has_ai_ban(repo: str) -> bool:
+    """Detect explicit repository bans on autonomous/unsolicited AI pull requests."""
+    for path in ("AI_POLICY.md", ".github/AI_POLICY.md", "AGENTS.md", "CONTRIBUTING.md", ".github/CONTRIBUTING.md"):
+        raw = gh(["api", f"repos/{repo}/contents/{path}", "--jq", ".content"])
+        if not raw:
+            continue
+        try:
+            text = base64.b64decode(raw.strip()).decode("utf-8", "ignore")
+        except Exception:
+            continue
+        if AI_BAN_RE.search(text):
+            return True
+    return False
+
+
+def load_list(path: str) -> list[str]:
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return [ln.strip() for ln in fh if ln.strip() and not ln.startswith("#")]
+    except FileNotFoundError:
+        return []
 
 
 def discover(min_stars: int, limit: int) -> list[str]:
@@ -106,9 +142,37 @@ def discover(min_stars: int, limit: int) -> list[str]:
     return [name for name, _ in ranked[:limit]]
 
 
+def discover_gsoc_orgs(orgs: list[str], min_stars: int, limit: int) -> list[str]:
+    """Discover active repositories across curated GSoC organizations carrying live labeled issues."""
+    if not orgs:
+        return []
+    seen: dict[str, int] = {}
+    labels = ('label:"help wanted"', 'label:"good first issue"', "label:bug")
+    for i in range(0, len(orgs), 5):
+        org_clause = " ".join(f"org:{o}" for o in orgs[i : i + 5])
+        for lbl in labels:
+            q = f"{lbl} is:issue is:open archived:false {org_clause}"
+            raw = gh(["api", "graphql", "-f", f"query={DISCOVER_QUERY}", "-f", f"q={q}"])
+            if not raw:
+                continue
+            try:
+                nodes = json.loads(raw)["data"]["search"]["nodes"]
+            except (json.JSONDecodeError, KeyError, TypeError):
+                continue
+            for node in nodes:
+                repo = (node or {}).get("repository") or {}
+                name = repo.get("nameWithOwner")
+                stars = repo.get("stargazerCount") or 0
+                if not name or stars < min_stars:
+                    continue
+                seen[name] = max(seen.get(name, 0), stars)
+    ranked = sorted(seen.items(), key=lambda kv: kv[1], reverse=True)
+    return [name for name, _ in ranked[:limit]]
+
+
 def gh(args: list[str]) -> str | None:
     try:
-        out = subprocess.run(["gh", *args], capture_output=True, text=True, timeout=90)
+        out = subprocess.run(["gh", *args], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90)
     except Exception:
         return None
     if out.returncode != 0:
@@ -178,14 +242,33 @@ def main() -> int:
     ap.add_argument("--apply-config", default="", help="rewrite this config's repos.allow from pinned + the ranking")
     ap.add_argument("--pinned", default="ops/pinned-repos.txt")
     ap.add_argument("--denied", default="ops/denied-repos.txt")
-    ap.add_argument("--max-total", type=int, default=30)
+    ap.add_argument("--gsoc-orgs", default="ops/gsoc-orgs.txt")
+    ap.add_argument("--gsoc-min-stars", type=int, default=100)
+    ap.add_argument("--gsoc-min-rate", type=int, default=35)
+    ap.add_argument("--gsoc-limit", type=int, default=40)
+    ap.add_argument("--max-total", type=int, default=45)
     ap.add_argument("--min-rate", type=int, default=40, help="merge-rate floor for automatic inclusion")
     ap.add_argument("--min-supply", type=int, default=5, help="labeled-issue floor for automatic inclusion")
     args = ap.parse_args()
 
+    pinned = load_list(args.pinned)
+    denied = set(load_list(args.denied))
+    gsoc_orgs = load_list(args.gsoc_orgs)
+    gsoc_org_set = {o.lower() for o in gsoc_orgs}
+    skip_set = set(pinned) | denied
+
     if args.discover:
-        repos = discover(args.min_stars, args.limit)
-        print(f"discovered {len(repos)} repos with live labeled issues (stars>={args.min_stars})", flush=True)
+        gsoc_repos = [r for r in discover_gsoc_orgs(gsoc_orgs, args.gsoc_min_stars, args.gsoc_limit) if r not in skip_set]
+        seen_gsoc = set(gsoc_repos)
+        general_repos = [
+            r for r in discover(args.min_stars, args.limit) if r not in skip_set and r not in seen_gsoc
+        ]
+        repos = gsoc_repos + general_repos
+        print(
+            f"discovered {len(gsoc_repos)} GSoC org repos (stars>={args.gsoc_min_stars}) + "
+            f"{len(general_repos)} general repos (stars>={args.min_stars})",
+            flush=True,
+        )
     else:
         repos = args.repos.split() if args.repos.strip() else DEFAULT_REPOS
     since = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=args.since_days)
@@ -194,6 +277,7 @@ def main() -> int:
     for repo in repos:
         total, merged = outside_merge_stats(repo, since)
         cla = has_cla(repo)
+        ai_ban = has_ai_ban(repo)
         gfi = label_count(repo, "good first issue")
         hw = label_count(repo, "help wanted")
         bug = label_count(repo, "bug")
@@ -210,12 +294,14 @@ def main() -> int:
                 "bug": bug,
                 "supply": supply,
                 "cla": cla,
+                "ai_ban": ai_ban,
                 "verdict": verdict(rate, supply),
             }
         )
         print(
             f"{repo:45} outside={total:3} merged={merged:3} rate={rate:4} "
-            f"gfi={gfi:4} hw={hw:4} bug={bug:4} cla={'yes' if cla else 'no':3} {verdict(rate, supply)}",
+            f"gfi={gfi:4} hw={hw:4} bug={bug:4} cla={'yes' if cla else 'no':3} "
+            f"ai_ban={'yes' if ai_ban else 'no':3} {verdict(rate, supply)}",
             flush=True,
         )
 
@@ -237,36 +323,46 @@ def main() -> int:
             fh.write("\n" + table + "\n")
 
     if args.apply_config:
-        pinned: list[str] = []
-        try:
-            with open(args.pinned, encoding="utf-8") as fh:
-                pinned = [ln.strip() for ln in fh if ln.strip() and not ln.startswith("#")]
-        except FileNotFoundError:
-            print(f"warning: {args.pinned} not found; pinned set is empty")
+        if not pinned:
+            print(f"warning: {args.pinned} not found or empty; pinned set is empty")
+        if not denied:
+            print(f"warning: {args.denied} not found or empty; no deny list")
 
-        denied: set[str] = set()
-        try:
-            with open(args.denied, encoding="utf-8") as fh:
-                denied = {ln.strip() for ln in fh if ln.strip() and not ln.startswith("#")}
-        except FileNotFoundError:
-            print(f"warning: {args.denied} not found; no deny list")
-
-        picked = [
-            r["repo"]
+        eligible = [
+            r
             for r in rows
-            if r["rate"] >= args.min_rate
-            and r["supply"] >= args.min_supply
+            if r["supply"] >= args.min_supply
             and not r.get("cla")
+            and not r.get("ai_ban")
             and r["repo"] not in pinned
             and r["repo"] not in denied
         ]
+        gsoc_picked = [
+            r["repo"]
+            for r in eligible
+            if r["repo"].partition("/")[0].lower() in gsoc_org_set and r["rate"] >= args.gsoc_min_rate
+        ]
+        general_picked = [
+            r["repo"]
+            for r in eligible
+            if r["repo"].partition("/")[0].lower() not in gsoc_org_set and r["rate"] >= args.min_rate
+        ]
+
         room = max(0, args.max_total - len(pinned))
-        allow = pinned + picked[:room]
+        gsoc_quota = (room + 1) // 2
+        general_quota = room // 2
+        chosen = gsoc_picked[:gsoc_quota] + general_picked[:general_quota]
+        if len(chosen) < room:
+            chosen_set = set(chosen)
+            backfill = [r for r in (gsoc_picked[gsoc_quota:] + general_picked[general_quota:]) if r not in chosen_set]
+            chosen.extend(backfill[: room - len(chosen)])
+        allow = pinned + chosen[:room]
 
         with open(args.apply_config, encoding="utf-8") as fh:
             cfg = json.load(fh)
         before = list((cfg.get("repos") or {}).get("allow") or [])
         cfg.setdefault("repos", {})["allow"] = allow
+        cfg.setdefault("repos", {})["deny"] = sorted(denied)
         with open(args.apply_config, "w", encoding="utf-8") as fh:
             json.dump(cfg, fh, indent=2)
             fh.write("\n")

@@ -73,8 +73,8 @@ honestly. It does not ask for a project idea — it asks what they want.
 
 ## What the bot does meanwhile
 
-- Keeps 2 PRs/day ceiling but effectively a few per week, **OWASP-weighted**, cream-only, never two open
-  PRs in one repo, 30-day per-repo cooldown.
+- Keeps 4 PRs/day ceiling (28/week), **OWASP-weighted**, cream-only, never two open
+  PRs in one repo, 1-day per-repo cooldown.
 - Never touches the proposal, never posts to the community channels, never replies to maintainers.
   Those are yours — they are the part that gets you selected.
 - Stops submitting to any repo whose AI policy forbids autonomous contributions; that list is in

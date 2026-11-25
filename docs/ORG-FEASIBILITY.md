@@ -138,3 +138,28 @@ wording is read and accepted.
   2026-11-13 did. That standard is the difference between a real hold and a filter eating the pool.
 - If throughput must rise, the lever is **more orgs without CLA/assignment gates**, not a looser
   quality bar.
+
+## Allow-list & gate updates (2026-11-26)
+
+- **Moved to `ops/denied-repos.txt`:** `astropy/astropy`, `wagtail/wagtail.org`, `beeware/briefcase`,
+  `CircuitVerse/CircuitVerse`, `processing/p5.js`, `wemake-services/django-modern-rest`,
+  `learningequality/kolibri` (AI policy prohibits/rejects autonomous PRs), `laurent22/joplin` (CLA +
+  closes unsolicited PRs), `homarr-labs/homarr` (live-app browser screenshots required),
+  `OpenCTI-Platform/opencti` (signed commits + heavy full-stack test dependencies).
+- **Assignment-gated repos unlocked via `s2b` / `8c` (request assignment first, implement once assigned):**
+  - `OWASP/Nest` (42% merge, Python, no CLA; PR template includes an AI checkbox — fill truthfully)
+  - `OWASP/owasp-mastg` (42% merge, Python, no CLA; unassigned issues often lack target labels)
+  - `layer5io/layer5` (61% merge, JS, DCO `git commit -s` required, assignment required)
+  - `sugarlabs/musicblocks-v4` (TS, assignment required; PR #1041 currently open)
+- **Newly pinned open-contribution GSoC/OWASP repos (no CLA, AI-permissive):**
+  - `OWASP/Threat-Dragon` (67% merge, JS, `AGENTS.md` operating contract)
+  - `OWASP/wrongsecrets` (91% merge, no CLA/AI ban; prefer non-challenge bugs/fixes)
+  - `asyncapi/cli` (75% merge, TypeScript, clean `CONTRIBUTING.md`)
+  - `kornia/kornia` (64% merge, Python, pro-AI `AI_POLICY.md`, PR #6809 merged)
+  - `DependencyTrack/dependency-track` (66% merge, Java, OWASP Flagship, DCO `git commit -s`)
+  - `OWASP/pytm` (67% merge, Python, clean `CONTRIBUTING.md`)
+  - `asyncapi/generator` (62% merge, JS, `AGENTS.md` AI checkbox + `Generated-by:`)
+  - `asyncapi/studio` (56% merge, TypeScript, clean `CONTRIBUTING.md`)
+  - `asyncapi/parser-js` (50% merge, TypeScript, clean `CONTRIBUTING.md`)
+  - `openwisp/openwisp-controller` (59% merge, Python, `AGENTS.md` project guide)
+  - `apache/dolphinscheduler` (53% merge, Java, `AGENTS.md` project guide)

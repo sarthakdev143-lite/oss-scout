@@ -1,0 +1,22 @@
+# Active GSoC organizations scanned weekly by ops/repo-scout.py (--discover).
+# Excludes orgs with known blanket AI bans or mandatory CLAs. One GitHub org per line.
+OWASP
+DependencyTrack
+asyncapi
+openwisp
+apache
+kornia
+OpenRefine
+sugarlabs
+layer5io
+freeCodeCamp
+jenkinsci
+cBioPortal
+casbin
+fossology
+keploy
+DefectDojo
+stdlib-js
+Apicurio
+corazawaf
+openmrs

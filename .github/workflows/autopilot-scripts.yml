@@ -44,5 +44,5 @@ jobs:
       - name: ops scripts compile
         run: |
           set -euo pipefail
-          python3 -m py_compile ops/repo-scout.py
+          python3 -m py_compile ops/repo-scout.py ops/update-merged-prs.py
           echo "python ok"

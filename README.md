@@ -5,6 +5,8 @@ An [opencode](https://opencode.ai) plugin that finds, prepares and queues open-s
 health → pick issues → implement a fix in a sandboxed clone → verify it → critic review → approval queue →
 follow up on review feedback.
 
+See [MERGED-PRS.md](MERGED-PRS.md) for the live showcase of merged open-source contributions.
+
 Nothing is written to GitHub until you approve it. No push, no fork, no PR and no comment happens
 without your approval. The default mode is **dry-run**.
 
