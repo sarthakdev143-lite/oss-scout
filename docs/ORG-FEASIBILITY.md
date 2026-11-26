@@ -163,3 +163,18 @@ wording is read and accepted.
   - `asyncapi/parser-js` (50% merge, TypeScript, clean `CONTRIBUTING.md`)
   - `openwisp/openwisp-controller` (59% merge, Python, `AGENTS.md` project guide)
   - `apache/dolphinscheduler` (53% merge, Java, `AGENTS.md` project guide)
+
+## Gate updates (2026-11-26 cycle)
+
+- **floci-io/floci: BLOCKED, signed commits required.** `main` only accepts signed commits; PR #9349 was
+  closed for that reason on 2026-11-25 (maintainer: "since these can't be signed the pull request can't
+  be merged"). Large pool (39 labeled bugs) but not usable until commit signing exists. Ask owner to add
+  to `repos.deny`.
+- **kornia/kornia: some bug issues are "reserved for a maintainer implementation".** Check the issue body
+  before starting; outside PRs against those are closed (#6791). Plain `bug` issues without that notice
+  remain eligible (#6809 merged 2026-11-25).
+- **xerial/sqlite-jdbc: C-source fixes show red CI.** CI tests against committed prebuilt natives, so a new
+  test for a native fix crashes the old binary (exit 134) until maintainers run "chore: update native
+  libraries". Verified with `make native` in docker (ExtensionTest 8/8 after rebuild). Explain this on the
+  PR; do not commit binaries.
+- **asyncapi/generator: bugs carry `Awaiting Approval`.** Treat as maintainer approval needed before a PR.
