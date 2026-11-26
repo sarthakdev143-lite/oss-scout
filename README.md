@@ -1,6 +1,6 @@
 # oss-scout
 
-An [opencode](https://opencode.ai) plugin that finds, prepares and queues open-source contributions for
+An AI Agent backed by [opencode](https://opencode.ai) that finds, prepares and queues open-source contributions for
 **you** to review and submit. It works through a pipeline: discover repos → screen their policies and
 health → pick issues → implement a fix in a sandboxed clone → verify it → critic review → approval queue →
 follow up on review feedback.
