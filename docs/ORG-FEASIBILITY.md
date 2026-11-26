@@ -178,3 +178,12 @@ wording is read and accepted.
   libraries". Verified with `make native` in docker (ExtensionTest 8/8 after rebuild). Explain this on the
   PR; do not commit binaries.
 - **asyncapi/generator: bugs carry `Awaiting Approval`.** Treat as maintainer approval needed before a PR.
+
+## Gate updates (2026-11-26, pass 65)
+
+- **OWASP/pytm: maintainer (izar) files bug issues without labels and opens the fix PR the same day.** #396 and #397
+  are linked to open PRs #400/#401, so they are blocked under s2; #373 is already fixed on master (#392). Check for a
+  linked open PR before reading the issue body.
+- **OWASP/Nest: bug issues attract many assignment requests.** #3483 has about 12 pending requests and no maintainer
+  response since the labels were added, so a further request has little value. #3934's O(m*n) claim is mostly the
+  fuzzy-match fallback, which cannot be made linear.
