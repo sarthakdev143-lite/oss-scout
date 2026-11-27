@@ -174,3 +174,17 @@ wording is read and accepted.
 - **OWASP/Threat-Dragon**: maintainer-filed bugs last touched 2026-05-28 (180-day stale line); AI Contributions Policy still being drafted (#1590). Re-check before touching.
 - **xerial/sqlite-jdbc**: any PR that changes `src/main/ext/*.c` and adds a JVM-crashing test goes red until maintainers run Build Native
   (CI tests the committed prebuilt libs). Prefer tests that fail by assertion, not by crashing the JVM.
+
+## Gate updates (2026-11-27, cycle 2)
+
+- **openwisp/openwisp-controller** - AI permitted, with conditions. Read the Anti AI Spam Policy
+  (openwisp.io/docs/dev/general/code-of-conduct.html): AI assistance is allowed, but PRs on issues not validated by
+  maintainers, unexplained or untested PRs, and repeated "please assign me" comments are treated as spam (temporary ban).
+  The PR template has a mandatory checklist, `AGENTS.md` requires a full-suite run (60 min) before pushing, and commit
+  subjects need an allowed prefix and past tense. Most maintainer-filed bugs already have a maintainer PR (#1424 -> #1433).
+  Status: usable only for a validated, un-PR'd bug; none today.
+- **OWASP/Nest** - assignment-gated (PR template: unassigned PRs auto-closed; no AI ban, AI checkbox). Only ~15 bug issues are
+  maintainer-filed and nearly all are claimed, PR'd or stale (2026-11-27 pool check).
+- **Java/Maven repos (harness gate)** - the harness host runs JDK 25. Projects pinning old Lombok (e.g. apache/dolphinscheduler,
+  lombok 1.18.20) cannot build on the host, so a plain `./mvnw ...` verify_cmd is auto-closed as NOT-VERIFIED even when the
+  fix passes on the project's JDK. Use a pinned-JDK docker command as verify_cmd and run that exact string first.
