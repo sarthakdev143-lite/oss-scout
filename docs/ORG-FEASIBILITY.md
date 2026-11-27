@@ -163,3 +163,14 @@ wording is read and accepted.
   - `asyncapi/parser-js` (50% merge, TypeScript, clean `CONTRIBUTING.md`)
   - `openwisp/openwisp-controller` (59% merge, Python, `AGENTS.md` project guide)
   - `apache/dolphinscheduler` (53% merge, Java, `AGENTS.md` project guide)
+
+## Cycle findings (2026-11-27)
+
+- **apache/dolphinscheduler**: no AI ban in `AGENTS.md`/CONTRIBUTING; PR template has a mandatory "generated or assisted by AI?" section
+  (answer truthfully), commit style `[Fix-<issue>][<Scope>]`, spotless enforced, no CLA/DCO. Tests run on H2 in docker
+  (`./mvnw ... -am clean test`; `clean` is required or JaCoCo fails). First PR: #18828.
+- **asyncapi/cli**: flooded, 60+ open PRs and nearly every labelled bug already has one (s2 linked PR). Low yield until the queue drains.
+- **DependencyTrack**: pool is mostly docs, by-design or enhancement; no cream defect found 11-27.
+- **OWASP/Threat-Dragon**: maintainer-filed bugs last touched 2026-05-28 (180-day stale line); AI Contributions Policy still being drafted (#1590). Re-check before touching.
+- **xerial/sqlite-jdbc**: any PR that changes `src/main/ext/*.c` and adds a JVM-crashing test goes red until maintainers run Build Native
+  (CI tests the committed prebuilt libs). Prefer tests that fail by assertion, not by crashing the JVM.
