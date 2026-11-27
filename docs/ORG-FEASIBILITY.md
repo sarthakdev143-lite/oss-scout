@@ -236,3 +236,12 @@ wording is read and accepted.
 - **freeCodeCamp** - 0 unassigned issues carrying target labels (2026-11-27).
 - **asyncapi/studio** - only labelled bug (#1359) is external-filed and stale since 2026-09.
 - **layer5io/layer5** - maintainer-filed labelled pool is chores/perf-plugin installs/UI layout/epic; no testable pure-util defect (confirms cycle 4).
+
+## Gate updates (2026-11-27, cycle 52)
+
+- **openwisp/openwisp-controller** - remaining maintainer-filed bugs not covered above: #1478 (PR #1483 closed; fix depends on openwisp-utils#760, an
+  external claimant asked 09-04), #864 (open PR #1252; commenter reports it already fixed on master), #744 (PR #1215 closed, companion auto-assigned
+  the claimant). All blocked or not validated; the Anti AI Spam Policy makes an unvalidated PR a ban risk.
+- **asyncapi/parser-js** - every maintainer-filed bug has an open PR: #876 (#1184, #1268), #878 (#1182), #924 (#1274). s2 linked-PR blocker for all.
+- **OWASP/Nest** - 2026-11-27 bug pool (unassigned, REST, 70+ items) is almost all CONTRIBUTOR/NONE-filed (fails rule a). Maintainer-filed
+  (COLLABORATOR) items are #3934 (perf tweak), #3898 (UI polish), #2861 (feature), #2701 (ideas), #908 (epic): none a defect. No assignment request made.
