@@ -227,3 +227,12 @@ wording is read and accepted.
 - **Unlabelled maintainer-filed pool, pinned OWASP repos (read 2026-11-27 via REST, assignee=none):** wstg 0; owasp-mastg 45 (all content
   work - tools, tests, demos, knowledge - and nearly all `TEMPORARILY-BLOCKED-FROM-ASSIGNMENT`; no code defects); wrongsecrets 4 (ideas/new
   challenges, not defects); OWASP-Hunting 1 (#96 feature, repo on cooldown); Threat-Dragon 60+ (policy-blocked, see above).
+
+## Gate updates (2026-11-27, cycle 50)
+
+- **R0Y00/Xbox2Windows** - all open `bug` issues are contributor-filed (rule a); maintainer-filed `help wanted` are GPU-emulator roadmap/research items,
+  not unit-testable defects. No eligible work today.
+- **ONEARMY/community-platform** - maintainer-filed `help wanted`/`good first issue` are feature and test-coverage work (Ambassador Programme, Academy, map e2e); no defect.
+- **freeCodeCamp** - 0 unassigned issues carrying target labels (2026-11-27).
+- **asyncapi/studio** - only labelled bug (#1359) is external-filed and stale since 2026-09.
+- **layer5io/layer5** - maintainer-filed labelled pool is chores/perf-plugin installs/UI layout/epic; no testable pure-util defect (confirms cycle 4).
