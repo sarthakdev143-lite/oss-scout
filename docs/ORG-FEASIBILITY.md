@@ -213,3 +213,14 @@ wording is read and accepted.
 - **asyncapi/generator** - `good first issue` and `help wanted` pools are empty (read 2026-11-27). The only issues with the maintainer
   `Approved Issue` label (#2297, #2291, #2290) are still contributor-filed (author_association CONTRIBUTOR), so they fail rule (a).
   Re-check only if a maintainer files one.
+
+## Gate updates (2026-11-27, cycle 7)
+
+- **OWASP/Threat-Dragon - AI POLICY PROHIBITS autonomous PRs (new, read from `AGENTS.md`).** Explicit Boundaries: "Humans create issues,
+  comment on issues, submit PRs..."; "Agents must not open issues, comment on GitHub, open PRs, approve PRs, merge..."; "Agents must not commit
+  or push unless a human explicitly asks"; several issues carry an `AI forbidden` label. Under s0b this repo must not receive a PR, however real
+  the bug (#972 undo/redo, #1226 thumbnail mismatch). Owner action: add `OWASP/Threat-Dragon` to `repos.deny`. Earlier notes calling it
+  "AI-permissive / usable" (2026-11-26 allow-list update) are superseded by this.
+- **Unlabelled maintainer-filed pool, pinned OWASP repos (read 2026-11-27 via REST, assignee=none):** wstg 0; owasp-mastg 45 (all content
+  work - tools, tests, demos, knowledge - and nearly all `TEMPORARILY-BLOCKED-FROM-ASSIGNMENT`; no code defects); wrongsecrets 4 (ideas/new
+  challenges, not defects); OWASP-Hunting 1 (#96 feature, repo on cooldown); Threat-Dragon 60+ (policy-blocked, see above).
