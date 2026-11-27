@@ -245,3 +245,13 @@ wording is read and accepted.
 - **asyncapi/parser-js** - every maintainer-filed bug has an open PR: #876 (#1184, #1268), #878 (#1182), #924 (#1274). s2 linked-PR blocker for all.
 - **OWASP/Nest** - 2026-11-27 bug pool (unassigned, REST, 70+ items) is almost all CONTRIBUTOR/NONE-filed (fails rule a). Maintainer-filed
   (COLLABORATOR) items are #3934 (perf tweak), #3898 (UI polish), #2861 (feature), #2701 (ideas), #908 (epic): none a defect. No assignment request made.
+
+## Gate updates (2026-11-27, violation follow-up)
+
+- **Java/Maven verify_cmd (confirmed with evidence)** - host JDKs available: `/usr/lib/jvm/temurin-{11,17,21,25}-jdk-amd64`, default is 25.
+  apache/dolphinscheduler (Lombok 1.18.20) cannot compile on 25 even on unmodified `dev`. A host-runnable verify_cmd that works:
+  `JAVA_HOME=/usr/lib/jvm/temurin-11-jdk-amd64 ./mvnw -B -ntp -pl <modules> -am clean test -Dtest=<Tests> -Dsurefire.failIfNoSpecifiedTests=false`
+  (proven on #18828, 15 tests green). Always run the exact ledger string before submitting. If a docker run created root-owned `target/`
+  dirs in the clone, remove them via docker before re-running on the host, or `clean` fails.
+- **jxxghp/MoviePilot** - all open `bug` issues (2026-11-27, 11 items) are user reports (author_association NONE), none maintainer-filed: fails rule (a).
+- **OWASP/wrongsecrets** - labelled pool is two maintainer ideas (#201 testbed, #37 new challenges); no defect.
