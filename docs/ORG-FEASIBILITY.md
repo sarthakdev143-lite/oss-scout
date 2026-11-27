@@ -183,6 +183,9 @@ wording is read and accepted.
   The PR template has a mandatory checklist, `AGENTS.md` requires a full-suite run (60 min) before pushing, and commit
   subjects need an allowed prefix and past tense. Most maintainer-filed bugs already have a maintainer PR (#1424 -> #1433).
   Status: usable only for a validated, un-PR'd bug; none today.
+  Re-checked 2026-11-27 (cycle 13): `openwisp-companion` auto-closes PRs not linked to a maintainer-validated issue within 24h
+  (e.g. #1501 for #1419), and a maintainer pointed to the Anti AI Spam Policy on #1442. Maintainer-filed bugs #1419 (no validation,
+  three prior PRs closed), #1396 (maintainer: "working as designed") and #1424 (open PR #1433) are all blocked.
 - **OWASP/Nest** - assignment-gated (PR template: unassigned PRs auto-closed; no AI ban, AI checkbox). Only ~15 bug issues are
   maintainer-filed and nearly all are claimed, PR'd or stale (2026-11-27 pool check).
 - **Java/Maven repos (harness gate)** - the harness host runs JDK 25. Projects pinning old Lombok (e.g. apache/dolphinscheduler,
