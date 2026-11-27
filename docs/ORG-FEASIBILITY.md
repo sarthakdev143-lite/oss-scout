@@ -207,3 +207,9 @@ wording is read and accepted.
   test, so skip them under rule (c) unless the defect lives in a pure util.
 - **Discovery tooling** - `gh issue list --json` has no `authorAssociation`; use `gh api repos/R/issues?state=open&per_page=100` and filter
   `author_association` and `pull_request==null` instead (core API, no search rate limit).
+
+## Gate updates (2026-11-27, cycle 5)
+
+- **asyncapi/generator** - `good first issue` and `help wanted` pools are empty (read 2026-11-27). The only issues with the maintainer
+  `Approved Issue` label (#2297, #2291, #2290) are still contributor-filed (author_association CONTRIBUTOR), so they fail rule (a).
+  Re-check only if a maintainer files one.
