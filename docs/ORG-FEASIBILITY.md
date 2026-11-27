@@ -188,3 +188,11 @@ wording is read and accepted.
 - **Java/Maven repos (harness gate)** - the harness host runs JDK 25. Projects pinning old Lombok (e.g. apache/dolphinscheduler,
   lombok 1.18.20) cannot build on the host, so a plain `./mvnw ...` verify_cmd is auto-closed as NOT-VERIFIED even when the
   fix passes on the project's JDK. Use a pinned-JDK docker command as verify_cmd and run that exact string first.
+
+## Gate updates (2026-11-27, cycle 3)
+
+- **asyncapi/generator** - the open `bug` pool (10 issues on 2026-11-27) is entirely contributor-filed and labelled `Awaiting Approval`
+  (maintainers have not validated them). These fail the maintainer-filed rule; wait for the label to be removed or look at
+  maintainer-filed `good first issue`/`help wanted` instead.
+- **GitHub API (tooling gate)** - bursts of `search/issues` calls trigger the secondary rate limit (HTTP 403) even with quota left;
+  it persisted >100 s. Space queries by >=10 s and keep a cycle to a handful of searches.
