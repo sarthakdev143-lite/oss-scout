@@ -196,3 +196,14 @@ wording is read and accepted.
   maintainer-filed `good first issue`/`help wanted` instead.
 - **GitHub API (tooling gate)** - bursts of `search/issues` calls trigger the secondary rate limit (HTTP 403) even with quota left;
   it persisted >100 s. Space queries by >=10 s and keep a cycle to a handful of searches.
+
+## Gate updates (2026-11-27, cycle 4)
+
+- **OWASP/pytm** - no AI policy in CONTRIBUTING (PR welcome, one clean commit per PR). Maintainer (izar) files logic bugs unlabelled and
+  opens his own fix PR the same day (#397 -> #401, #396 -> #400); #373 was fixed by #392. Check for a linked PR before spending time.
+  Status: usable only for an unlabelled maintainer-filed bug without a linked PR; none today.
+- **layer5io/layer5** - AGENTS.md is LLM-friendly (`git commit -s`, `make setup` + `make site`, verify by curling the rendered page). Tests are
+  `node --test` on pure utility modules only: UI-component defects (e.g. #8521, Steps-indicator has no click handler) cannot be proven by a
+  test, so skip them under rule (c) unless the defect lives in a pure util.
+- **Discovery tooling** - `gh issue list --json` has no `authorAssociation`; use `gh api repos/R/issues?state=open&per_page=100` and filter
+  `author_association` and `pull_request==null` instead (core API, no search rate limit).
