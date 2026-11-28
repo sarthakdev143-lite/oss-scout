@@ -187,3 +187,7 @@ wording is read and accepted.
 - openwisp/openwisp-controller: bugs are maintainer-filed but heavily claimed or linked to PRs; AGENTS.md requires a
   full-suite run (60 min) before pushing.
 - OWASP/Nest: assignment queue on popular issues is long and unanswered; do not add to it.
+- asyncapi/generator (2026-11-28): all 16 open unassigned `bug` issues are filed by CONTRIBUTOR/NONE and most carry
+  `Awaiting Approval`; no maintainer-filed supply under rule (a). asyncapi/cli bugs are likewise NONE/CONTRIBUTOR-filed and mostly `stale`.
+- ONEARMY/community-platform and freeCodeCamp (2026-11-28): maintainer-filed `help wanted` items are UI features or
+  test-only tasks, not cream defects (s3b).
