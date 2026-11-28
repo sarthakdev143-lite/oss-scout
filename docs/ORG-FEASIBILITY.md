@@ -191,3 +191,7 @@ wording is read and accepted.
   `Awaiting Approval`; no maintainer-filed supply under rule (a). asyncapi/cli bugs are likewise NONE/CONTRIBUTOR-filed and mostly `stale`.
 - ONEARMY/community-platform and freeCodeCamp (2026-11-28): maintainer-filed `help wanted` items are UI features or
   test-only tasks, not cream defects (s3b).
+- DependencyTrack/dependency-track (2026-11-28, cycle 5): the maintainer-filed `defect` items are #3230 (open PR #7170),
+  #325 and #353 (no maintainer activity since 2019 and 2022, stale). Nothing eligible under s2.
+- neomjs/neo (2026-11-28): e2e shards are flaky across unrelated PRs (grid, board, scheduler specs fail on other branches the
+  same day); judge a PR on the specs it touches, not the aggregate `e2e-engine` check.
