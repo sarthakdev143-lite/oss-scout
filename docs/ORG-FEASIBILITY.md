@@ -172,6 +172,9 @@ wording is read and accepted.
   check with `npx -y -p neo-agent-skills neo-agent-skills-pr-body --body-file <file>`.
 - Unit tier needs Node 24, `npm install`, `npm run bundle-browser-deps`, and `git` on PATH (a spec runs `git ls-files`).
   Specs touching local/UTC conversion must be run with `npm run test-unit-tz` (`NEO_UNIT_TZ=<zone>`).
+- Review: the maintainers' reviewer agent (neo-gpt-emmy) posts a formal `CHANGES_REQUESTED` review with a "Required Actions" list,
+  and checks boundary inputs of shared utilities (it caught `Date.UTC` reading years 0-99 as 1900-1999 on #22569). Address it by
+  pushing a fix commit to the same branch, plus a PR comment. Test edge inputs, not only the issue's examples.
 - Supply: maintainer-agent filed `good first issue` + `help wanted` bugs, specific and well specified.
 
 ## OWASP/Threat-Dragon (2026-11-28) — AI policy gate
