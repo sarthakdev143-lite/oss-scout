@@ -173,3 +173,17 @@ wording is read and accepted.
 - Unit tier needs Node 24, `npm install`, `npm run bundle-browser-deps`, and `git` on PATH (a spec runs `git ls-files`).
   Specs touching local/UTC conversion must be run with `npm run test-unit-tz` (`NEO_UNIT_TZ=<zone>`).
 - Supply: maintainer-agent filed `good first issue` + `help wanted` bugs, specific and well specified.
+
+## OWASP/Threat-Dragon (2026-11-28) — AI policy gate
+
+- `AGENTS.md` explicit boundaries: agents must not open issues, comment on GitHub, open PRs, commit or push; humans
+  write all docs. Issues also carry an `AI forbidden` label and #1590 tracks a stricter AI-contributions policy.
+- Verdict: do not contribute. Owner should add `OWASP/Threat-Dragon` to `repos.deny`.
+
+## Supply notes (2026-11-28)
+
+- DependencyTrack/dependency-track: real bugs use the `defect` label and are almost all user-filed; maintainer-filed
+  `help wanted` items are enhancements/spikes. Little supply under rule (a).
+- openwisp/openwisp-controller: bugs are maintainer-filed but heavily claimed or linked to PRs; AGENTS.md requires a
+  full-suite run (60 min) before pushing.
+- OWASP/Nest: assignment queue on popular issues is long and unanswered; do not add to it.
