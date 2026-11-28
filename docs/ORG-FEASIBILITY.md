@@ -163,3 +163,13 @@ wording is read and accepted.
   - `asyncapi/parser-js` (50% merge, TypeScript, clean `CONTRIBUTING.md`)
   - `openwisp/openwisp-controller` (59% merge, Python, `AGENTS.md` project guide)
   - `apache/dolphinscheduler` (53% merge, Java, `AGENTS.md` project guide)
+
+## neomjs/neo (2026-11-28, first PR #22569)
+
+- No CLA. `CONTRIBUTING.md` §5 explicitly welcomes autonomous agents; no AI ban.
+- Claim bot: comment on the issue to claim; `github-actions` assigns the first eligible claimant, 3-day lease renewed by any comment.
+- PR must target `dev`, carry a standalone `Resolves #N` line and the template's `Authored by @handle (model, reasoning, harness)` line;
+  check with `npx -y -p neo-agent-skills neo-agent-skills-pr-body --body-file <file>`.
+- Unit tier needs Node 24, `npm install`, `npm run bundle-browser-deps`, and `git` on PATH (a spec runs `git ls-files`).
+  Specs touching local/UTC conversion must be run with `npm run test-unit-tz` (`NEO_UNIT_TZ=<zone>`).
+- Supply: maintainer-agent filed `good first issue` + `help wanted` bugs, specific and well specified.
